@@ -149,7 +149,7 @@ namespace Dynamics365WebApi.Token
         {
 
             if (!adfsUri.EndsWith("/"))
-                adfsUri = adfsUri + "/";
+                adfsUri = $"{adfsUri}/";
             var url = $"{adfsUri}adfs/oauth2/authorize";
 
             var response_type = "code";
