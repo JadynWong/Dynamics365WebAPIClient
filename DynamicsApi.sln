@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicsApi", "DynamicsApi\DynamicsApi.csproj", "{E73EE7E8-A763-4D4C-ACFF-EFF5262BB593}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dynamics365WebApi", "Dynamics365WebApi\Dynamics365WebApi.csproj", "{73385872-D909-43A6-9003-C29BF7469E43}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E73EE7E8-A763-4D4C-ACFF-EFF5262BB593}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E73EE7E8-A763-4D4C-ACFF-EFF5262BB593}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E73EE7E8-A763-4D4C-ACFF-EFF5262BB593}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E73EE7E8-A763-4D4C-ACFF-EFF5262BB593}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73385872-D909-43A6-9003-C29BF7469E43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73385872-D909-43A6-9003-C29BF7469E43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73385872-D909-43A6-9003-C29BF7469E43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73385872-D909-43A6-9003-C29BF7469E43}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5FF7A40F-179C-4D92-9FE9-ECC6D128F989}
+	EndGlobalSection
+EndGlobal
