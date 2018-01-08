@@ -20,17 +20,17 @@ namespace Dynamics365WebApi.Token
         ///<summary>
         /// 类型
         /// </summary>
-        public string token_Type { get; set; }
+        public string token_type { get; set; }
 
         ///<summary>
         /// 有效期 秒
         /// </summary>
-        public int expires_In { get; set; }
+        public int expires_in { get; set; }
 
         ///<summary>
         /// refresh_Token 用于刷新Token
         /// </summary>
-        public string refresh_Token { get; set; }
+        public string refresh_token { get; set; }
 
         /// <summary>
         /// 请求Token
