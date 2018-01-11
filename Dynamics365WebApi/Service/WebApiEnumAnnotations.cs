@@ -1,7 +1,7 @@
 ﻿namespace Dynamics365WebApi.Service
 {
     //[Flags]
-    public enum CrmApiEnumAnnotations
+    public enum WebApiEnumAnnotations
     {
         /// <summary>
         /// 无
