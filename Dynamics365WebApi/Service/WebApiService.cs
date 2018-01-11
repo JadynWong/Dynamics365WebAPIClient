@@ -170,7 +170,7 @@ namespace Dynamics365WebApi.Service
         }
         
         /// <summary>
-        /// WebApiVersion
+        /// 执行固定函数
         /// </summary>
         /// <returns></returns>
         public async Task<JObject> Execute(string url)
