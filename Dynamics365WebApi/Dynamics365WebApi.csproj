@@ -46,14 +46,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auth\DynamicsAuth.cs" />
+    <Compile Include="Auth\OAuthMessageHandler.cs" />
+    <Compile Include="Cache\ICacheManager.cs" />
+    <Compile Include="Cache\RuntimeCacheManager.cs" />
     <Compile Include="Common\Utils.cs" />
+    <Compile Include="Configs\Dynamics365Config.cs" />
+    <Compile Include="Exceptions\WebApiHttpResponseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service\CrmApiEnumAnnotations.cs" />
-    <Compile Include="Service\CrmApiService.cs" />
-    <Compile Include="Service\CrmConfig.cs" />
-    <Compile Include="Service\CrmHttpResponseException.cs" />
-    <Compile Include="Token\CrmAuth.cs" />
-    <Compile Include="Token\OAuthMessageHandler.cs" />
+    <Compile Include="Service\WebApiEnumAnnotations.cs" />
+    <Compile Include="Service\WebApiService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

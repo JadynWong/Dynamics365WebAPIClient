@@ -6,7 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace Dynamics365WebApi.Common
 {
-    public class Utils
+    /// <summary>
+    /// 辅助类
+    /// </summary>
+    public static class Utils
     {
         /// <summary>
         /// 将查询字符串解析转换为名值集合.

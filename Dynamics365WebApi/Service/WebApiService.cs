@@ -4,45 +4,113 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Dynamics365WebApi.Auth;
+using Dynamics365WebApi.Cache;
 using Dynamics365WebApi.Common;
-using Dynamics365WebApi.Token;
+using Dynamics365WebApi.Configs;
+using Dynamics365WebApi.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Dynamics365WebApi.Service
 {
-
-    public class CrmApiService
+    /// <summary>
+    /// Dynamics365 WebApi服务
+    /// <para>单例使用</para>
+    /// </summary>
+    public class WebApiService
     {
-        private static readonly HttpClient RestClient;
+        private readonly HttpClient _restClient;
 
-        public static readonly CrmConfig CrmConfig;
+        private readonly Dynamics365Config _dynamics365Config;
+        
+        /// <summary>
+        /// Dynamics365配置
+        /// </summary>
+        public Dynamics365Config Dynamics365Config => _dynamics365Config;
 
-        static CrmApiService()
+        /// <summary>
+        /// 构造Dynamics365 WebAPI服务
+        /// </summary>
+        public WebApiService()
         {
-
-            CrmConfig = new CrmConfig();
-            if (CrmConfig.IsIfd)
+            _dynamics365Config = new Dynamics365Config();
+            if (_dynamics365Config.IsIfd)
             {
-                var httpMessageHandler = new OAuthMessageHandler(CrmConfig.AdfsUri, CrmConfig.Resource, CrmConfig.ClientId, CrmConfig.RedirectUri,
-                    $"{CrmConfig.DomainName}\\{CrmConfig.UserName}", CrmConfig.Password, new HttpClientHandler()); ;
-                RestClient = GetNewHttpClient(httpMessageHandler, CrmConfig.ApiUrl);
+                var cacheManager = new RuntimeCacheManager();
+                _restClient = BuildOnIfd(cacheManager);
             }
             else
             {
-
-                CrmConfig = new CrmConfig();
-                var httpMessageHandler = new HttpClientHandler()
-                {
-                    Credentials = new NetworkCredential(CrmConfig.UserName, CrmConfig.Password, CrmConfig.DomainName)
-                };
-                RestClient = GetNewHttpClient(httpMessageHandler, CrmConfig.ApiUrl);
+                _restClient = BuildOnPremise();
             }
-
-
         }
 
+        /// <summary>
+        /// 构造Dynamics365 WebAPI服务
+        /// </summary>
+        /// <param name="dynamics365Config">Dynamics365配置</param>
+        /// <param name="cacheManager">缓存管理(on-premise时无须提供)</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public WebApiService(Dynamics365Config dynamics365Config, ICacheManager cacheManager)
+        {
+            if (dynamics365Config == null)
+                throw new ArgumentNullException(nameof(dynamics365Config));
 
+            _dynamics365Config = dynamics365Config;
+            if (_dynamics365Config.IsIfd)
+            {
+                if (cacheManager == null)
+                    throw new ArgumentNullException(nameof(cacheManager));
+                _restClient = BuildOnIfd(cacheManager);
+            }
+            else
+            {
+                _restClient = BuildOnPremise();
+            }
+        }
+
+        /// <summary>
+        /// 构造IFD HTTP客户端
+        /// </summary>
+        /// <param name="cacheManager"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        private HttpClient BuildOnIfd(ICacheManager cacheManager)
+        {
+            if (cacheManager == null)
+                throw new ArgumentNullException(nameof(cacheManager));
+            var httpMessageHandler = new OAuthMessageHandler(_dynamics365Config.ADFS_URI,
+                _dynamics365Config.Resource,
+                _dynamics365Config.ClientId,
+                _dynamics365Config.RedirectUri,
+                $"{_dynamics365Config.DomainName}\\{_dynamics365Config.UserName}",
+                _dynamics365Config.Password,
+                cacheManager,
+                new HttpClientHandler());
+            ;
+            return GetNewHttpClient(httpMessageHandler, _dynamics365Config.WebApiAddress);
+        }
+
+        /// <summary>
+        /// 构造On-Premise HTTP客户端
+        /// </summary>
+        /// <returns></returns>
+        private HttpClient BuildOnPremise()
+        {
+            var httpMessageHandler = new HttpClientHandler()
+            {
+                Credentials = new NetworkCredential(_dynamics365Config.UserName, _dynamics365Config.Password, _dynamics365Config.DomainName)
+            };
+            return GetNewHttpClient(httpMessageHandler, _dynamics365Config.WebApiAddress);
+        }
+
+        /// <summary>
+        /// 获取HTTP 客户端
+        /// </summary>
+        /// <param name="httpMessageHandler"></param>
+        /// <param name="webApiBaseAddress"></param>
+        /// <returns></returns>
         private static HttpClient GetNewHttpClient(HttpMessageHandler httpMessageHandler, string webApiBaseAddress)
         {
             var httpClient = new HttpClient(httpMessageHandler)
@@ -51,9 +119,18 @@ namespace Dynamics365WebApi.Service
                 Timeout = new TimeSpan(0, 2, 0),
                 DefaultRequestHeaders =
                 {
-                    {"OData-MaxVersion", "4.0"},
-                    {"OData-Version", "4.0"},
-                    {"Accept","application/json"}
+                    {
+                        "OData-MaxVersion",
+                        "4.0"
+                    },
+                    {
+                        "OData-Version",
+                        "4.0"
+                    },
+                    {
+                        "Accept",
+                        "application/json"
+                    }
                 }
             };
             return httpClient;
@@ -70,7 +147,7 @@ namespace Dynamics365WebApi.Service
             var req = new HttpRequestMessage(HttpMethod.Get, url);
             var response = await this.SendAsync(req);
             var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
-            return jObject;//200
+            return jObject; //200
         }
 
         /// <summary>
@@ -81,15 +158,30 @@ namespace Dynamics365WebApi.Service
         {
             var url = $"RetrieveVersion";
 
-            HttpRequestMessage retrieveVersionRequest =
+            var req =
                 new HttpRequestMessage(HttpMethod.Get, url);
 
-            var retrieveVersionResponse =
-                await this.SendAsync(retrieveVersionRequest);//200
+            var response =
+                await this.SendAsync(req); //200
             JObject retrievedVersion = JsonConvert.DeserializeObject<JObject>(
-                await retrieveVersionResponse.Content.ReadAsStringAsync());
+                await response.Content.ReadAsStringAsync());
             //Capture the actual version available in this organization
-            return Version.Parse((string)retrievedVersion.GetValue("Version"));
+            return Version.Parse((string) retrievedVersion.GetValue("Version"));
+        }
+        
+        /// <summary>
+        /// WebApiVersion
+        /// </summary>
+        /// <returns></returns>
+        public async Task<JObject> Execute(string url)
+        {
+            if(string.IsNullOrWhiteSpace(url))
+                throw new ArgumentNullException(nameof(url));
+
+            var req = new HttpRequestMessage(HttpMethod.Get, url);
+            var response = await this.SendAsync(req);
+            var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
+            return jObject; //200
         }
 
         /// <summary>
@@ -106,7 +198,7 @@ namespace Dynamics365WebApi.Service
             {
                 Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
             var createdguidUrl = response.Headers.GetValues("OData-EntityId").FirstOrDefault();
             return createdguidUrl;
         }
@@ -117,19 +209,26 @@ namespace Dynamics365WebApi.Service
         /// <param name="entityName"></param>
         /// <param name="queryOptions"></param>
         /// <param name="jObject"></param>
-        /// <param name="crmApiEnumAnnotations"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> CreateAndReadAsync(string entityName, string queryOptions, JObject jObject, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> CreateAndReadAsync(string entityName, string queryOptions, JObject jObject,
+            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildUrl(entityName, queryOptions);
 
             var req = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Headers = { { "Prefer", "return=representation" } },
+                Headers =
+                {
+                    {
+                        "Prefer",
+                        "return=representation"
+                    }
+                },
                 Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            IncludeAnnotations(req, crmApiEnumAnnotations);
-            var response = await this.SendAsync(req);//201
+            IncludeAnnotations(req, webApiEnumAnnotations);
+            var response = await this.SendAsync(req); //201
             //Body should contain the requested new-contact information.
             JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
                 await response.Content.ReadAsStringAsync());
@@ -142,15 +241,16 @@ namespace Dynamics365WebApi.Service
         /// <param name="entityName"></param>
         /// <param name="guid"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="crmApiEnumAnnotations"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> ReadAsync(string entityName, string guid, string queryOptions, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> ReadAsync(string entityName, string guid, string queryOptions,
+            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildGuidUrl(entityName, guid, queryOptions);
 
             var req = new HttpRequestMessage(HttpMethod.Get, url);
-            IncludeAnnotations(req, crmApiEnumAnnotations);
-            var response = await this.SendAsync(req);//200
+            IncludeAnnotations(req, webApiEnumAnnotations);
+            var response = await this.SendAsync(req); //200
             var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
             return jObject;
         }
@@ -162,14 +262,15 @@ namespace Dynamics365WebApi.Service
         /// <param name="alternateKey"></param>
         /// <param name="alternateValue"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="crmApiEnumAnnotations"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> ReadAsync(string entityName, string alternateKey, string alternateValue, string queryOptions, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> ReadAsync(string entityName, string alternateKey, string alternateValue,
+            string queryOptions, WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue, queryOptions);
 
             var req = new HttpRequestMessage(HttpMethod.Get, url);
-            var response = await this.SendAsync(req);//200
+            var response = await this.SendAsync(req); //200
             var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
             return jObject;
         }
@@ -179,15 +280,16 @@ namespace Dynamics365WebApi.Service
         /// </summary>
         /// <param name="entityName"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="crmApiEnumAnnotations"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> ReadAsync(string entityName, string queryOptions, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> ReadAsync(string entityName, string queryOptions,
+            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildUrl(entityName, queryOptions);
 
             var req = new HttpRequestMessage(HttpMethod.Get, url);
-            IncludeAnnotations(req, crmApiEnumAnnotations);
-            var response = await this.SendAsync(req);//200
+            IncludeAnnotations(req, webApiEnumAnnotations);
+            var response = await this.SendAsync(req); //200
             var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
             return jObject;
         }
@@ -198,19 +300,20 @@ namespace Dynamics365WebApi.Service
         /// <param name="entityName"></param>
         /// <param name="guid"></param>
         /// <param name="attribute"></param>
-        /// <param name="crmApiEnumAnnotations"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> ReadEntitySingleProp(string entityName, string guid, string attribute, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> ReadEntitySingleProp(string entityName, string guid, string attribute,
+            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildGuidUrl(entityName, guid, null, attribute);
             //Now retrieve just the single property.
             JObject prop;
             var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
-            IncludeAnnotations(req, crmApiEnumAnnotations);
+            IncludeAnnotations(req, webApiEnumAnnotations);
             HttpResponseMessage responseMessage =
                 await this.SendAsync(req);
             prop = JsonConvert.DeserializeObject<JObject>(
-                await responseMessage.Content.ReadAsStringAsync());//200
+                await responseMessage.Content.ReadAsStringAsync()); //200
             return prop;
         }
 
@@ -229,7 +332,7 @@ namespace Dynamics365WebApi.Service
             {
                 Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
         }
 
         /// <summary>
@@ -248,7 +351,7 @@ namespace Dynamics365WebApi.Service
             {
                 Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
         }
 
         /// <summary>
@@ -277,7 +380,8 @@ namespace Dynamics365WebApi.Service
         /// <param name="alternateValue"></param>
         /// <param name="jObject"></param>
         /// <returns></returns>
-        public async Task UpdatePatchAsync(string entityName, string alternateKey, string alternateValue, JObject jObject)
+        public async Task UpdatePatchAsync(string entityName, string alternateKey, string alternateValue,
+            JObject jObject)
         {
             var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue);
 
@@ -295,18 +399,25 @@ namespace Dynamics365WebApi.Service
         /// <param name="guid"></param>
         /// <param name="queryOptions"></param>
         /// <param name="jObject"></param>
-        /// <param name="crmApiEnumAnnotations"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName, string guid, string queryOptions, JObject jObject, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> UpdateAndReadAsync(string entityName, string guid, string queryOptions,
+            JObject jObject, WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildGuidUrl(entityName, guid, queryOptions);
 
             var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
             {
-                Headers = { { "Prefer", "return=representation" } },
+                Headers =
+                {
+                    {
+                        "Prefer",
+                        "return=representation"
+                    }
+                },
                 Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            IncludeAnnotations(req, crmApiEnumAnnotations);
+            IncludeAnnotations(req, webApiEnumAnnotations);
             var response = await this.SendAsync(req); //200
             //Body should contain the requested new-contact information.
             JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
@@ -322,18 +433,27 @@ namespace Dynamics365WebApi.Service
         /// <param name="alternateValue"></param>
         /// <param name="queryOptions"></param>
         /// <param name="jObject"></param>
+        /// <param name="webApiEnumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName, string alternateKey, string alternateValue, string queryOptions, JObject jObject, CrmApiEnumAnnotations crmApiEnumAnnotations = CrmApiEnumAnnotations.None)
+        public async Task<JObject> UpdateAndReadAsync(string entityName, string alternateKey, string alternateValue,
+            string queryOptions, JObject jObject,
+            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
         {
             var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue, queryOptions);
 
             var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
             {
-                Headers = { { "Prefer", "return=representation" } },
+                Headers =
+                {
+                    {
+                        "Prefer",
+                        "return=representation"
+                    }
+                },
                 Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            IncludeAnnotations(req, crmApiEnumAnnotations);
-            var response = await this.SendAsync(req);//200
+            IncludeAnnotations(req, webApiEnumAnnotations);
+            var response = await this.SendAsync(req); //200
             //Body should contain the requested new-contact information.
             JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
                 await response.Content.ReadAsStringAsync());
@@ -358,7 +478,7 @@ namespace Dynamics365WebApi.Service
             {
                 Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            var responseMessage = await this.SendAsync(httpRequestMessage);//204
+            var responseMessage = await this.SendAsync(httpRequestMessage); //204
         }
 
         /// <summary>
@@ -376,12 +496,18 @@ namespace Dynamics365WebApi.Service
             {
                 Headers =
                 {
-                    { "If-Match", "*" },
-                    {"If-None-Match","*" }
+                    {
+                        "If-Match",
+                        "*"
+                    },
+                    {
+                        "If-None-Match",
+                        "*"
+                    }
                 },
                 Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
         }
 
         /// <summary>
@@ -400,12 +526,18 @@ namespace Dynamics365WebApi.Service
             {
                 Headers =
                 {
-                    {"If-Match", "*" },
-                    {"If-None-Match","*" }
+                    {
+                        "If-Match",
+                        "*"
+                    },
+                    {
+                        "If-None-Match",
+                        "*"
+                    }
                 },
                 Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json")
             };
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
         }
 
         /// <summary>
@@ -419,7 +551,7 @@ namespace Dynamics365WebApi.Service
             var url = BuildGuidUrl(entityName, guid);
 
             var req = new HttpRequestMessage(HttpMethod.Delete, url);
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
         }
 
         /// <summary>
@@ -434,7 +566,7 @@ namespace Dynamics365WebApi.Service
             var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue);
 
             var req = new HttpRequestMessage(HttpMethod.Delete, url);
-            var response = await this.SendAsync(req);//204
+            var response = await this.SendAsync(req); //204
         }
 
         /// <summary>
@@ -451,9 +583,10 @@ namespace Dynamics365WebApi.Service
             var url = BuildGuidUrl(entityName, guid, attribute);
 
             //Now update just the single property.
-            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, url); ;
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
+            ;
             HttpResponseMessage responseMessage =
-                await this.SendAsync(httpRequestMessage);//204
+                await this.SendAsync(httpRequestMessage); //204
         }
 
         /// <summary>
@@ -463,7 +596,7 @@ namespace Dynamics365WebApi.Service
         /// <returns></returns>
         private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage requestMessage)
         {
-            var response = await RestClient.SendAsync(requestMessage);
+            var response = await _restClient.SendAsync(requestMessage);
             HandError(response);
             return response;
         }
@@ -476,10 +609,17 @@ namespace Dynamics365WebApi.Service
         {
             if (!response.IsSuccessStatusCode)
             {
-                throw new CrmHttpResponseException(response.Content);
+                throw new WebApiHttpResponseException(response.Content);
             }
         }
 
+        /// <summary>
+        /// 构造Url
+        /// </summary>
+        /// <param name="entityName"></param>
+        /// <param name="queryOptions"></param>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
         private static string BuildUrl(string entityName, string queryOptions = null, string attribute = null)
         {
             string url;
@@ -496,10 +636,20 @@ namespace Dynamics365WebApi.Service
             {
                 url += $"/{attribute}";
             }
+
             return url;
         }
 
-        private static string BuildGuidUrl(string entityName, string guid, string queryOptions = null, string attribute = null)
+        /// <summary>
+        /// 构造Guid Url
+        /// </summary>
+        /// <param name="entityName"></param>
+        /// <param name="guid"></param>
+        /// <param name="queryOptions"></param>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        private static string BuildGuidUrl(string entityName, string guid, string queryOptions = null,
+            string attribute = null)
         {
             string url;
 
@@ -516,10 +666,21 @@ namespace Dynamics365WebApi.Service
             {
                 url += $"/{attribute}";
             }
+
             return url;
         }
 
-        private static string BuildAlternateKeyUrl(string entityName, string alternateKey, string alternateValue, string queryOptions = null)
+        
+        /// <summary>
+        /// 构造备用键Url
+        /// </summary>
+        /// <param name="entityName"></param>
+        /// <param name="alternateKey"></param>
+        /// <param name="alternateValue"></param>
+        /// <param name="queryOptions"></param>
+        /// <returns></returns>
+        private static string BuildAlternateKeyUrl(string entityName, string alternateKey, string alternateValue,
+            string queryOptions = null)
         {
             string url;
             if (string.IsNullOrWhiteSpace(queryOptions))
@@ -530,27 +691,37 @@ namespace Dynamics365WebApi.Service
             {
                 url = $"{Utils.ToPlural(entityName)}({alternateKey}='{alternateValue}')?{queryOptions}";
             }
+
             return url;
         }
 
-        private static void IncludeAnnotations(HttpRequestMessage requestMessage, CrmApiEnumAnnotations crmApiEnumAnnotations)
+        /// <summary>
+        /// 注释处理
+        /// </summary>
+        /// <param name="requestMessage"></param>
+        /// <param name="webApiEnumAnnotations"></param>
+        private static void IncludeAnnotations(HttpRequestMessage requestMessage,
+            WebApiEnumAnnotations webApiEnumAnnotations)
         {
-            if (crmApiEnumAnnotations == CrmApiEnumAnnotations.None) return;
-            switch (crmApiEnumAnnotations)
+            if (webApiEnumAnnotations == WebApiEnumAnnotations.None) return;
+            switch (webApiEnumAnnotations)
             {
-                case CrmApiEnumAnnotations.FormattedValue:
-                    requestMessage.Headers.Add("Prefer", "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
+                case WebApiEnumAnnotations.FormattedValue:
+                    requestMessage.Headers.Add("Prefer",
+                        "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
                     break;
-                case CrmApiEnumAnnotations.Associatednavigationproperty:
-                    requestMessage.Headers.Add("Prefer", "odata.include-annotations=\"Microsoft.Dynamics.CRM.associatednavigationproperty\"");
+                case WebApiEnumAnnotations.Associatednavigationproperty:
+                    requestMessage.Headers.Add("Prefer",
+                        "odata.include-annotations=\"Microsoft.Dynamics.CRM.associatednavigationproperty\"");
                     break;
-                case CrmApiEnumAnnotations.Lookuplogicalname:
-                    requestMessage.Headers.Add("Prefer", "odata.include-annotations=\"Microsoft.Dynamics.CRM.lookuplogicalname\"");
+                case WebApiEnumAnnotations.Lookuplogicalname:
+                    requestMessage.Headers.Add("Prefer",
+                        "odata.include-annotations=\"Microsoft.Dynamics.CRM.lookuplogicalname\"");
                     break;
-                case CrmApiEnumAnnotations.All:
+                case WebApiEnumAnnotations.All:
                     requestMessage.Headers.Add("Prefer", "odata.include-annotations=\"*\"");
                     break;
-                case CrmApiEnumAnnotations.None:
+                case WebApiEnumAnnotations.None:
                     break;
                 default:
                     break;

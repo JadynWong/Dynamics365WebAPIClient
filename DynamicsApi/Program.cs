@@ -15,7 +15,7 @@ namespace DynamicsApi
     {
         static void Main(string[] args)
         {
-            var crmApiService = new CrmApiService();
+            var crmApiService = new WebApiService();
             //var a = crmApiService.WhoImIAsync().Result;
             //Console.WriteLine(a);
             var b = crmApiService.ReadAsync("systemuser", null).Result;

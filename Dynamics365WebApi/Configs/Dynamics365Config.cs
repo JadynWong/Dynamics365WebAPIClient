@@ -1,46 +1,55 @@
 ﻿using System;
 using System.Configuration;
 
-namespace Dynamics365WebApi.Service
+namespace Dynamics365WebApi.Configs
 {
-    public class CrmConfig
+    public class Dynamics365Config
     {
         /// <summary>
         /// ADFS地址
         /// </summary>
-        public string AdfsUri { get; private set; }
+        public string ADFS_URI { get; private set; }
+
         /// <summary>
         /// CRM
         /// </summary>
         public string Resource { get; private set; }
+
         /// <summary>
         /// 组织
         /// </summary>
         public string Organization { get; private set; }
+
         /// <summary>
         /// Clientguid
         /// </summary>
         public string ClientId { get; private set; }
+
         /// <summary>
         /// RedirectUri
         /// </summary>
         public string RedirectUri { get; private set; }
+
         /// <summary>
         /// DomainName
         /// </summary>
         public string DomainName { get; private set; }
+
         /// <summary>
         /// UserName
         /// </summary>
         public string UserName { get; private set; }
+
         /// <summary>
         /// Password
         /// </summary>
         public string Password { get; private set; }
+
         /// <summary>
         /// IsIfd
         /// </summary>
         public bool IsIfd { get; private set; }
+
         /// <summary>
         /// API版本
         /// </summary>
@@ -49,10 +58,9 @@ namespace Dynamics365WebApi.Service
         private const string ApiPath = "/api/data/";
 
 
-
-        public CrmConfig()
+        public Dynamics365Config()
         {
-            AdfsUri = ConfigurationManager.AppSettings["AdfsUri"];
+            ADFS_URI = ConfigurationManager.AppSettings["ADFSUri"];
             Resource = ConfigurationManager.AppSettings["Resource"];
             DomainName = ConfigurationManager.AppSettings["DomainName"];
             UserName = ConfigurationManager.AppSettings["UserName"];
@@ -79,9 +87,10 @@ namespace Dynamics365WebApi.Service
         /// <param name="organization"></param>
         /// <param name="version"></param>
         /// <param name="isIfd"></param>
-        public CrmConfig(string adfsUri, string resource, string domainName, string userName, string password, string clientId, string redirectUri, string organization, string version, bool isIfd)
+        public Dynamics365Config(string adfsUri, string resource, string domainName, string userName, string password,
+            string clientId, string redirectUri, string organization, string version, bool isIfd)
         {
-            AdfsUri = adfsUri;
+            ADFS_URI = adfsUri;
             Resource = resource;
             DomainName = domainName;
             UserName = userName;
@@ -94,7 +103,8 @@ namespace Dynamics365WebApi.Service
         }
 
         private string _url;
-        public string ApiUrl
+
+        public string WebApiAddress
         {
             get
             {
@@ -104,6 +114,7 @@ namespace Dynamics365WebApi.Service
                     {
                         return _url;
                     }
+
                     _url = $"{this.Resource}{ApiPath}v{Version}/";
                     return _url;
                 }
@@ -113,6 +124,7 @@ namespace Dynamics365WebApi.Service
                     {
                         return _url;
                     }
+
                     _url = $"{this.Resource}{this.Organization}{ApiPath}v{Version}/";
                     return _url;
                 }
