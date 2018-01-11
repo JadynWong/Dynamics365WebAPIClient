@@ -1,4 +1,6 @@
 # Dynamics365WebAPI
 
-ADFS
-On-Premise
+## Support
+
+* IFD - ADFS
+* On-Premise
