@@ -19,7 +19,7 @@ namespace DynamicsApi
         static void Main(string[] args)
         {
             var queryOptions = new QueryOptions(
-                new QuerySelect(""),//"fullname", "modifiedon", "createdon","versionnumber"),
+                new QuerySelect("fullname", "modifiedon", "createdon","versionnumber"),
                 new QueryCount(true),
                 new QueryFilter(new FilterExpression()
                 {
