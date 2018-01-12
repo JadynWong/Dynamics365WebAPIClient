@@ -9,6 +9,11 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
     /// </summary>
     public class QueryCount : QueryOption
     {
+        public QueryCount()
+        {
+            
+        }
+        
         /// <summary>
         /// 检索实体计数
         /// </summary>

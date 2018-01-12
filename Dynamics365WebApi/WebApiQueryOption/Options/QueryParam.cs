@@ -15,6 +15,14 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// <summary>
         /// 参数化查询
         /// </summary>
+        public QueryParam()
+        {
+            
+        }
+        
+        /// <summary>
+        /// 参数化查询
+        /// </summary>
         /// <param name="paramName">@p</param>
         /// <param name="paramValue">真实列</param>
         public QueryParam(string paramName, string paramValue)
