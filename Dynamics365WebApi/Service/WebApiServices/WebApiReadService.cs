@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dynamics365WebApi.WebApiQueryOption;
+using Dynamics365WebApi.WebApiQueryOption.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -228,6 +229,13 @@ namespace Dynamics365WebApi.Service
         public async Task<JObject> ReadAsync(string entityName, QueryOptions queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
         {
+            if (maxPageSize.HasValue)
+            {
+                if (queryOptions.Any(x => x.GetType() == typeof(QueryCount)))
+                {
+                    throw new ArgumentException("您不应将 $top 与 $count 一起使用",nameof(maxPageSize));
+                }
+            }
             return await ReadAsync(entityName, queryOptions?.ToString(), enumAnnotations, maxPageSize);
         }
 
@@ -277,6 +285,13 @@ namespace Dynamics365WebApi.Service
         public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, QueryOptions queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
         {
+            if (maxPageSize.HasValue)
+            {
+                if (queryOptions.Any(x => x.GetType() == typeof(QueryCount)))
+                {
+                    throw new ArgumentException("您不应将 $top 与 $count 一起使用",nameof(maxPageSize));
+                }
+            }
             return await ReadEntitySingleProp(entityName, attribute, queryOptions?.ToString(), enumAnnotations, maxPageSize);
         }
 

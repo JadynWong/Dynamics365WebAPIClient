@@ -65,10 +65,13 @@
     <Compile Include="WebApiQueryOption\Options\Filter\FilterExpression.cs" />
     <Compile Include="WebApiQueryOption\Options\Filter\LogicalOperator.cs" />
     <Compile Include="WebApiQueryOption\Options\QueryCount.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryFetchXml.cs" />
     <Compile Include="WebApiQueryOption\Options\QueryFilter.cs" />
     <Compile Include="WebApiQueryOption\Options\QueryOrderBy.cs" />
     <Compile Include="WebApiQueryOption\Options\QueryParam.cs" />
+    <Compile Include="WebApiQueryOption\Options\QuerySavedQuery.cs" />
     <Compile Include="WebApiQueryOption\Options\QueryTop.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryUserQuery.cs" />
     <Compile Include="WebApiQueryOption\QueryOption.cs" />
     <Compile Include="Service\EnumAnnotations.cs" />
     <Compile Include="Service\WebApiService.cs" />

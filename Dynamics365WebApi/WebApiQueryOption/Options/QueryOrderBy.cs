@@ -15,6 +15,25 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// <summary>
         /// 排序结果 默认
         /// </summary>
+        public QueryOrderBy()
+        {
+            
+        }
+
+        /// <summary>
+        /// 排序结果 默认
+        /// </summary>
+        /// <param name="orderBy"></param>
+        /// <param name="columns"></param>
+        public QueryOrderBy(bool orderBy,string[] columns)
+        {
+            OrderBy = orderBy;
+            Columns = columns;
+        }
+        
+        /// <summary>
+        /// 排序结果 默认
+        /// </summary>
         /// <param name="columns"></param>
         public QueryOrderBy(string[] columns)
         {

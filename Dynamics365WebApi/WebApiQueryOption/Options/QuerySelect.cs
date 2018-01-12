@@ -9,12 +9,27 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
     /// </summary>
     public class QuerySelect : QueryOption
     {
+        /// <summary>
+        /// 请求特定属性
+        /// </summary>
+        public QuerySelect()
+        {
+            
+        }
 
+        /// <summary>
+        /// 请求特定属性
+        /// </summary>
+        /// <param name="allcolumns">所有</param>
         public QuerySelect(bool allcolumns = true)
         {
             AllColumns = allcolumns;
         }
 
+        /// <summary>
+        /// 请求特定属性
+        /// </summary>
+        /// <param name="columns">属性</param>
         public QuerySelect(params string[] columns)
         {
             if (columns != null)

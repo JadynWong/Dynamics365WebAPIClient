@@ -12,11 +12,14 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
     public sealed class ConditionExpression
     {
         private string _attributeName;
+
         private ConditionOperator _conditionOperator;
+
         //private IList<object> _values;
         private object _value;
+
         //private string _entityName;
-        private bool OnlyDate;
+        private bool _onlyDate;
 
         public ConditionExpression()
         {
@@ -47,7 +50,8 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
             Create(attributeName, conditionOperator, value);
         }
 
-        public ConditionExpression(string attributeName, ConditionOperator conditionOperator, DateTime value, bool onlyDate = false)
+        public ConditionExpression(string attributeName, ConditionOperator conditionOperator, DateTime value,
+            bool onlyDate = false)
         {
             OnlyDate = onlyDate;
             Create(attributeName, conditionOperator, value);
@@ -70,98 +74,16 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
             this._value = value;
         }
 
-        //private ConditionExpression(string attributeName, ConditionOperator conditionOperator, object value)
-        //{
-        //    this._attributeName = attributeName;
-        //    this._conditionOperator = conditionOperator;
-        //    if (value == null)
-        //        return;
-        //    this._value = value;
-        //}
-
-        //public ConditionExpression(string attributeName, ConditionOperator conditionOperator, params object[] values)
-        //  : this((string)null, attributeName, conditionOperator, values)
-        //{
-        //}
-
-        //private ConditionExpression(string entityName, string attributeName, ConditionOperator conditionOperator, params object[] values)
-        //{
-        //    this._entityName = entityName;
-        //    this._attributeName = attributeName;
-        //    this._conditionOperator = conditionOperator;
-        //    if (values == null)
-        //        return;
-        //    this._values = new List<object>((IList<object>)values);
-        //}
-
-        //public ConditionExpression(string attributeName, ConditionOperator conditionOperator, object value)
-        //  : this(attributeName, conditionOperator, new object[1] { value })
-        //{
-        //}
-
-        //public ConditionExpression(string entityName, string attributeName, ConditionOperator conditionOperator, object value)
-        //  : this(entityName, attributeName, conditionOperator, new object[1]
-        //  {
-        //value
-        //  })
-        //{
-        //}
-
-        //public ConditionExpression(string attributeName, ConditionOperator conditionOperator)
-        //  : this((string)null, attributeName, conditionOperator, new object[0])
-        //{
-        //}
-
-        //public ConditionExpression(string entityName, string attributeName, ConditionOperator conditionOperator)
-        //  : this(entityName, attributeName, conditionOperator, new object[0])
-        //{
-        //}
-
-        //public ConditionExpression(string attributeName, ConditionOperator conditionOperator, ICollection values)
-        //{
-        //    this._attributeName = attributeName;
-        //    this._conditionOperator = conditionOperator;
-        //    if (values == null)
-        //        return;
-        //    this._values = new List<object>();
-        //    foreach (object obj in (IEnumerable)values)
-        //        this._values.Add(obj);
-        //}
-
-        //public string EntityName
-        //{
-        //    get
-        //    {
-        //        return this._entityName;
-        //    }
-        //    set
-        //    {
-        //        this._entityName = value;
-        //    }
-        //}
-
         public string AttributeName
         {
-            get
-            {
-                return this._attributeName;
-            }
-            set
-            {
-                this._attributeName = value;
-            }
+            get { return this._attributeName; }
+            set { this._attributeName = value; }
         }
 
         public ConditionOperator Operator
         {
-            get
-            {
-                return this._conditionOperator;
-            }
-            set
-            {
-                this._conditionOperator = value;
-            }
+            get { return this._conditionOperator; }
+            set { this._conditionOperator = value; }
         }
 
         public object Value
@@ -172,25 +94,14 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
                     this._value = new object();
                 return this._value;
             }
-            private set
-            {
-                this._value = value;
-            }
+            private set { this._value = value; }
         }
 
-        //public IList<object> Values
-        //{
-        //    get
-        //    {
-        //        if (this._values == null)
-        //            this._values = new List<object>();
-        //        return this._values;
-        //    }
-        //    private set
-        //    {
-        //        this._values = value;
-        //    }
-        //}
+        public bool OnlyDate
+        {
+            get { return this._onlyDate; }
+            set { this._onlyDate = value; }
+        }
 
         public override string ToString()
         {
@@ -207,7 +118,8 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
                 {
                     value = string.IsNullOrWhiteSpace(Value as string) ? "''" : $"'{Value}'";
                 }
-                else if (valueType == typeof(int) || valueType == typeof(double) || valueType == typeof(decimal) || valueType == typeof(long))
+                else if (valueType == typeof(int) || valueType == typeof(double) || valueType == typeof(decimal) ||
+                         valueType == typeof(long))
                 {
                     value = $"{Value}";
                 }
@@ -217,7 +129,7 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
                 }
                 else if (valueType == typeof(DateTime))
                 {
-                    var dateTime = ((DateTime)Value);
+                    var dateTime = ((DateTime) Value);
                     if (OnlyDate)
                     {
                         value = $"{Value:yyyy-MM-dd}";
@@ -230,7 +142,7 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
                 }
                 else if (valueType == typeof(bool))
                 {
-                    var bools = (bool)Value;
+                    var bools = (bool) Value;
                     value = bools ? "true" : "false";
                 }
                 else
@@ -239,7 +151,7 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
                 }
             }
 
-            switch (_conditionOperator)
+            switch (this.Operator)
             {
                 case ConditionOperator.Equal:
                     return $"{AttributeName} eq {value}";
@@ -260,7 +172,7 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options.Filter
                 case ConditionOperator.Contains:
                     return $"contains({AttributeName},'({value})')";
                 default:
-                    throw new ArgumentException($"不支持的操作,{_conditionOperator}", $"conditionOperator");
+                    throw new ArgumentException($"不支持的操作,{this.Operator}", $"Operator");
             }
         }
     }

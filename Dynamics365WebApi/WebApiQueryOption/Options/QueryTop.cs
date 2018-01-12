@@ -16,6 +16,14 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// <summary>
         /// 限制结果
         /// </summary>
+        public QueryTop()
+        {
+            
+        }
+        
+        /// <summary>
+        /// 限制结果
+        /// </summary>
         /// <param name="top">返回结果</param>
         public QueryTop(int top)
         {

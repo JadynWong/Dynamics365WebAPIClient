@@ -13,6 +13,11 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
     /// </summary>
     public class QueryFilter : QueryOption
     {
+        public QueryFilter()
+        {
+            
+        }
+        
         public QueryFilter(FilterExpression filterExpression)
         {
             if (filterExpression == null)
