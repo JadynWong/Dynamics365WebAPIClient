@@ -54,8 +54,26 @@
     <Compile Include="Configs\Dynamics365Config.cs" />
     <Compile Include="Exceptions\WebApiHttpResponseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service\WebApiEnumAnnotations.cs" />
+    <Compile Include="Service\WebApiServices\WebApiCreateService.cs" />
+    <Compile Include="Service\WebApiServices\WebApiDeleteService.cs" />
+    <Compile Include="Service\WebApiServices\WebApiExecuteService.cs" />
+    <Compile Include="Service\WebApiServices\WebApiReadService.cs" />
+    <Compile Include="Service\WebApiServices\WebApiUpdateService.cs" />
+    <Compile Include="Service\WebApiServices\WebApiUpsertService.cs" />
+    <Compile Include="WebApiQueryOption\Options\Filter\ConditionOperator.cs" />
+    <Compile Include="WebApiQueryOption\Options\Filter\ConditionExpression.cs" />
+    <Compile Include="WebApiQueryOption\Options\Filter\FilterExpression.cs" />
+    <Compile Include="WebApiQueryOption\Options\Filter\LogicalOperator.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryCount.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryFilter.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryOrderBy.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryParam.cs" />
+    <Compile Include="WebApiQueryOption\Options\QueryTop.cs" />
+    <Compile Include="WebApiQueryOption\QueryOption.cs" />
+    <Compile Include="Service\EnumAnnotations.cs" />
     <Compile Include="Service\WebApiService.cs" />
+    <Compile Include="WebApiQueryOption\QueryOptions.cs" />
+    <Compile Include="WebApiQueryOption\Options\QuerySelect.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

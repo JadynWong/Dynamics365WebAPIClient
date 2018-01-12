@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Dynamics365WebApi.Auth;
@@ -18,12 +20,12 @@ namespace Dynamics365WebApi.Service
     /// Dynamics365 WebApi服务
     /// <para>单例使用</para>
     /// </summary>
-    public class WebApiService
+    public partial class WebApiService
     {
         private readonly HttpClient _restClient;
 
         private readonly Dynamics365Config _dynamics365Config;
-        
+
         /// <summary>
         /// Dynamics365配置
         /// </summary>
@@ -137,459 +139,6 @@ namespace Dynamics365WebApi.Service
         }
 
         /// <summary>
-        /// WhoImI
-        /// </summary>
-        /// <returns></returns>
-        public async Task<JObject> WhoImIAsync()
-        {
-            var url = $"WhoAmI";
-
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            var response = await this.SendAsync(req);
-            var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
-            return jObject; //200
-        }
-
-        /// <summary>
-        /// WebApiVersion
-        /// </summary>
-        /// <returns></returns>
-        public async Task<Version> WebApiVersion()
-        {
-            var url = $"RetrieveVersion";
-
-            var req =
-                new HttpRequestMessage(HttpMethod.Get, url);
-
-            var response =
-                await this.SendAsync(req); //200
-            JObject retrievedVersion = JsonConvert.DeserializeObject<JObject>(
-                await response.Content.ReadAsStringAsync());
-            //Capture the actual version available in this organization
-            return Version.Parse((string) retrievedVersion.GetValue("Version"));
-        }
-        
-        /// <summary>
-        /// 执行固定函数
-        /// </summary>
-        /// <returns></returns>
-        public async Task<JObject> Execute(string url)
-        {
-            if(string.IsNullOrWhiteSpace(url))
-                throw new ArgumentNullException(nameof(url));
-
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            var response = await this.SendAsync(req);
-            var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
-            return jObject; //200
-        }
-
-        /// <summary>
-        /// 创建记录
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="jObject"></param>
-        /// <returns></returns>
-        public async Task<string> CreateAsync(string entityName, JObject jObject)
-        {
-            var url = BuildUrl(entityName);
-
-            var req = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-            var createdguidUrl = response.Headers.GetValues("OData-EntityId").FirstOrDefault();
-            return createdguidUrl;
-        }
-
-        /// <summary>
-        /// 创建并查询 仅v8.2
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> CreateAndReadAsync(string entityName, string queryOptions, JObject jObject,
-            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildUrl(entityName, queryOptions);
-
-            var req = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Headers =
-                {
-                    {
-                        "Prefer",
-                        "return=representation"
-                    }
-                },
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            IncludeAnnotations(req, webApiEnumAnnotations);
-            var response = await this.SendAsync(req); //201
-            //Body should contain the requested new-contact information.
-            JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
-                await response.Content.ReadAsStringAsync());
-            return deserializeObject;
-        }
-
-        /// <summary>
-        /// 查询指定记录
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadAsync(string entityName, string guid, string queryOptions,
-            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildGuidUrl(entityName, guid, queryOptions);
-
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            IncludeAnnotations(req, webApiEnumAnnotations);
-            var response = await this.SendAsync(req); //200
-            var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
-            return jObject;
-        }
-
-        /// <summary>
-        /// 查询指定记录
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadAsync(string entityName, string alternateKey, string alternateValue,
-            string queryOptions, WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue, queryOptions);
-
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            var response = await this.SendAsync(req); //200
-            var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
-            return jObject;
-        }
-
-        /// <summary>
-        /// 查询实体
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadAsync(string entityName, string queryOptions,
-            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildUrl(entityName, queryOptions);
-
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            IncludeAnnotations(req, webApiEnumAnnotations);
-            var response = await this.SendAsync(req); //200
-            var jObject = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync());
-            return jObject;
-        }
-
-        /// <summary>
-        /// 查询单个属性
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="attribute"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadEntitySingleProp(string entityName, string guid, string attribute,
-            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildGuidUrl(entityName, guid, null, attribute);
-            //Now retrieve just the single property.
-            JObject prop;
-            var req = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
-            IncludeAnnotations(req, webApiEnumAnnotations);
-            HttpResponseMessage responseMessage =
-                await this.SendAsync(req);
-            prop = JsonConvert.DeserializeObject<JObject>(
-                await responseMessage.Content.ReadAsStringAsync()); //200
-            return prop;
-        }
-
-        /// <summary>
-        /// PUT更新
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="jObject"></param>
-        /// <returns></returns>
-        public async Task UpdatePutAsync(string entityName, string guid, JObject jObject)
-        {
-            var url = BuildGuidUrl(entityName, guid);
-
-            var req = new HttpRequestMessage(HttpMethod.Put, url)
-            {
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// PUT更新
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
-        /// <param name="jObject"></param>
-        /// <returns></returns>
-        public async Task UpdatePutAsync(string entityName, string alternateKey, string alternateValue, JObject jObject)
-        {
-            var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue);
-
-            var req = new HttpRequestMessage(HttpMethod.Put, url)
-            {
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// Patch部分更新
-        /// </summary>
-        /// <param name="guid"></param>
-        /// <param name="entityName"></param>
-        /// <param name="jObject"></param>
-        /// <returns></returns>
-        public async Task UpdatePatchAsync(string entityName, string guid, JObject jObject)
-        {
-            var url = BuildGuidUrl(entityName, guid);
-
-            var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
-            {
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// Patch部分更新
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
-        /// <param name="jObject"></param>
-        /// <returns></returns>
-        public async Task UpdatePatchAsync(string entityName, string alternateKey, string alternateValue,
-            JObject jObject)
-        {
-            var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue);
-
-            var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
-            {
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// 更新并查询 仅v8.2
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName, string guid, string queryOptions,
-            JObject jObject, WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildGuidUrl(entityName, guid, queryOptions);
-
-            var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
-            {
-                Headers =
-                {
-                    {
-                        "Prefer",
-                        "return=representation"
-                    }
-                },
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            IncludeAnnotations(req, webApiEnumAnnotations);
-            var response = await this.SendAsync(req); //200
-            //Body should contain the requested new-contact information.
-            JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
-                await response.Content.ReadAsStringAsync());
-            return deserializeObject;
-        }
-
-        /// <summary>
-        /// 更新并查询 仅v8.2
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName, string alternateKey, string alternateValue,
-            string queryOptions, JObject jObject,
-            WebApiEnumAnnotations webApiEnumAnnotations = WebApiEnumAnnotations.None)
-        {
-            var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue, queryOptions);
-
-            var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
-            {
-                Headers =
-                {
-                    {
-                        "Prefer",
-                        "return=representation"
-                    }
-                },
-                Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            IncludeAnnotations(req, webApiEnumAnnotations);
-            var response = await this.SendAsync(req); //200
-            //Body should contain the requested new-contact information.
-            JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
-                await response.Content.ReadAsStringAsync());
-            return deserializeObject;
-        }
-
-        /// <summary>
-        /// 更新单个属性
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="attribute"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public async Task UpdateEntitySingleProp(string entityName, string guid, string attribute, JObject value)
-        {
-            //Create unique guidentifier by appending property name 
-            var url = BuildGuidUrl(entityName, guid, null, attribute);
-
-            //Now update just the single property.
-            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, url)
-            {
-                Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var responseMessage = await this.SendAsync(httpRequestMessage); //204
-        }
-
-        /// <summary>
-        /// 插入/更新
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public async Task UpsertAsync(string entityName, string guid, JObject value)
-        {
-            var url = BuildGuidUrl(entityName, guid);
-
-            var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
-            {
-                Headers =
-                {
-                    {
-                        "If-Match",
-                        "*"
-                    },
-                    {
-                        "If-None-Match",
-                        "*"
-                    }
-                },
-                Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// 插入/更新
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public async Task UpsertAsync(string entityName, string alternateKey, string alternateValue, JObject value)
-        {
-            var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue);
-
-            var req = new HttpRequestMessage(new HttpMethod("PATCH"), url)
-            {
-                Headers =
-                {
-                    {
-                        "If-Match",
-                        "*"
-                    },
-                    {
-                        "If-None-Match",
-                        "*"
-                    }
-                },
-                Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json")
-            };
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// 删除
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <returns></returns>
-        public async Task DeleteAsync(string entityName, string guid)
-        {
-            var url = BuildGuidUrl(entityName, guid);
-
-            var req = new HttpRequestMessage(HttpMethod.Delete, url);
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// 删除
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
-        /// <returns></returns>
-        public async Task DeleteAsync(string entityName, string alternateKey, string alternateValue)
-        {
-            var url = BuildAlternateKeyUrl(entityName, alternateKey, alternateValue);
-
-            var req = new HttpRequestMessage(HttpMethod.Delete, url);
-            var response = await this.SendAsync(req); //204
-        }
-
-        /// <summary>
-        /// 删除单个属性
-        /// </summary>
-        /// <para>这无法用于单一值导航属性解除两个实体的关联</para>
-        /// <param name="entityName"></param>
-        /// <param name="guid"></param>
-        /// <param name="attribute"></param>
-        /// <returns></returns>
-        public async Task DeleteEntitySingleProp(string entityName, string guid, string attribute)
-        {
-            //Create unique guidentifier by appending property name 
-            var url = BuildGuidUrl(entityName, guid, attribute);
-
-            //Now update just the single property.
-            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, url);
-            ;
-            HttpResponseMessage responseMessage =
-                await this.SendAsync(httpRequestMessage); //204
-        }
-
-        /// <summary>
         /// 发送记录
         /// </summary>
         /// <param name="requestMessage"></param>
@@ -648,18 +197,18 @@ namespace Dynamics365WebApi.Service
         /// <param name="queryOptions"></param>
         /// <param name="attribute"></param>
         /// <returns></returns>
-        private static string BuildGuidUrl(string entityName, string guid, string queryOptions = null,
+        private static string BuildGuidUrl(string entityName, Guid guid, string queryOptions = null,
             string attribute = null)
         {
             string url;
 
             if (string.IsNullOrWhiteSpace(queryOptions))
             {
-                url = $"{Utils.ToPlural(entityName)}({guid})";
+                url = $"{Utils.ToPlural(entityName)}({guid:D})";
             }
             else
             {
-                url = $"{Utils.ToPlural(entityName)}({guid})?{queryOptions}";
+                url = $"{Utils.ToPlural(entityName)}({guid:D})?{queryOptions}";
             }
 
             if (!string.IsNullOrWhiteSpace(attribute))
@@ -670,62 +219,137 @@ namespace Dynamics365WebApi.Service
             return url;
         }
 
-        
         /// <summary>
         /// 构造备用键Url
         /// </summary>
         /// <param name="entityName"></param>
-        /// <param name="alternateKey"></param>
-        /// <param name="alternateValue"></param>
+        /// <param name="alternateKeyValues"></param>
         /// <param name="queryOptions"></param>
         /// <returns></returns>
-        private static string BuildAlternateKeyUrl(string entityName, string alternateKey, string alternateValue,
+        private static string BuildAlternateKeyUrl(string entityName, IEnumerable<KeyValuePair<string, string>> alternateKeyValues,
             string queryOptions = null)
         {
             string url;
             if (string.IsNullOrWhiteSpace(queryOptions))
             {
-                url = $"{Utils.ToPlural(entityName)}({alternateKey}='{alternateValue}')";
+                url = $"{Utils.ToPlural(entityName)}({BuildAlternateKeyValues(alternateKeyValues)})";
             }
             else
             {
-                url = $"{Utils.ToPlural(entityName)}({alternateKey}='{alternateValue}')?{queryOptions}";
+                url = $"{Utils.ToPlural(entityName)}({BuildAlternateKeyValues(alternateKeyValues)})?{queryOptions}";
             }
 
             return url;
         }
 
         /// <summary>
-        /// 注释处理
+        /// 生成备用键
         /// </summary>
-        /// <param name="requestMessage"></param>
-        /// <param name="webApiEnumAnnotations"></param>
-        private static void IncludeAnnotations(HttpRequestMessage requestMessage,
-            WebApiEnumAnnotations webApiEnumAnnotations)
+        /// <param name="alternateKeyValues"></param>
+        /// <returns></returns>
+        private static string BuildAlternateKeyValues(IEnumerable<KeyValuePair<string, string>> alternateKeyValues)
         {
-            if (webApiEnumAnnotations == WebApiEnumAnnotations.None) return;
-            switch (webApiEnumAnnotations)
+            StringBuilder stringBuilder = new StringBuilder();
+            if (alternateKeyValues == null)
             {
-                case WebApiEnumAnnotations.FormattedValue:
-                    requestMessage.Headers.Add("Prefer",
+                throw new ArgumentNullException(nameof(alternateKeyValues));
+            }
+            foreach (var alternateKeyValue in alternateKeyValues)
+            {
+                if (stringBuilder.Length > 0)
+                {
+                    stringBuilder.Append(",");
+                }
+
+                stringBuilder.AppendFormat("{0}='{1}'", alternateKeyValue.Key, alternateKeyValue.Value);
+            }
+
+            if (stringBuilder.Length == 0)
+            {
+                throw new ArgumentException("不能为空", nameof(alternateKeyValues));
+            }
+            return stringBuilder.ToString();
+        }
+
+        /// <summary>
+        /// 构造请求
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="enumAnnotations"></param>
+        /// <param name="maxPageSize"></param>
+        /// <param name="representation"></param>
+        /// <returns></returns>
+        private static HttpRequestMessage BuildGetRequest(string url,
+            EnumAnnotations? enumAnnotations = null,
+            int? maxPageSize = null,
+            bool representation = false)
+        {
+            return BuildRequest(HttpMethod.Get, url, null, enumAnnotations, maxPageSize, representation);
+        }
+
+        /// <summary>
+        /// 构造请求
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="url"></param>
+        /// <param name="jObject"></param>
+        /// <param name="enumAnnotations"></param>
+        /// <param name="maxPageSize"></param>
+        /// <param name="representation"></param>
+        /// <returns></returns>
+        private static HttpRequestMessage BuildRequest(HttpMethod httpMethod, string url, JObject jObject = null,
+            EnumAnnotations? enumAnnotations = null,
+            int? maxPageSize = null,
+            bool representation = false)
+        {
+            var req = new HttpRequestMessage(httpMethod, url);
+            if (jObject != null)
+                req.Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
+            var prefer = new List<string>();
+            switch (enumAnnotations)
+            {
+                case EnumAnnotations.None:
+                    break;
+                case EnumAnnotations.FormattedValue:
+                    prefer.Add(
                         "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
                     break;
-                case WebApiEnumAnnotations.Associatednavigationproperty:
-                    requestMessage.Headers.Add("Prefer",
+                case EnumAnnotations.Associatednavigationproperty:
+                    prefer.Add(
                         "odata.include-annotations=\"Microsoft.Dynamics.CRM.associatednavigationproperty\"");
                     break;
-                case WebApiEnumAnnotations.Lookuplogicalname:
-                    requestMessage.Headers.Add("Prefer",
+                case EnumAnnotations.Lookuplogicalname:
+                    prefer.Add(
                         "odata.include-annotations=\"Microsoft.Dynamics.CRM.lookuplogicalname\"");
                     break;
-                case WebApiEnumAnnotations.All:
-                    requestMessage.Headers.Add("Prefer", "odata.include-annotations=\"*\"");
+                case EnumAnnotations.MicrosoftDynamicsCrmAll:
+                    prefer.Add(
+                        "odata.include-annotations=\"Microsoft.Dynamics.CRM.*\"");
                     break;
-                case WebApiEnumAnnotations.None:
+                case EnumAnnotations.All:
+                    prefer.Add("odata.include-annotations=\"*\"");
+                    break;
+                case null:
                     break;
                 default:
                     break;
             }
+
+            if (maxPageSize.HasValue)
+            {
+                prefer.Add($"odata.maxpagesize={maxPageSize.Value}");
+            }
+
+            if (representation)
+            {
+                prefer.Add("return=representation");
+            }
+            if (prefer.Count > 0)
+            {
+                req.Headers.Add("Prefer", prefer);
+            }
+
+            return req;
         }
     }
 }

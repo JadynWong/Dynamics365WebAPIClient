@@ -12,6 +12,8 @@ namespace Dynamics365WebApi.Auth
 {
     public class DynamicsAuth
     {
+        #region Filed
+
         ///<summary>
         /// Token
         /// </summary>
@@ -31,6 +33,10 @@ namespace Dynamics365WebApi.Auth
         /// refresh_Token 用于刷新Token
         /// </summary>
         public string refresh_token { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// 请求Token
@@ -54,7 +60,7 @@ namespace Dynamics365WebApi.Auth
             var list = BuildCodeParams(userName, password);
 
             //包含上下文的 用WebRequest也可以
-            using (var handler = new WebRequestHandler {AllowAutoRedirect = false})
+            using (var handler = new WebRequestHandler { AllowAutoRedirect = false })
             {
                 using (var httpClient = new HttpClient(handler))
                 {
@@ -113,6 +119,10 @@ namespace Dynamics365WebApi.Auth
                 }
             }
         }
+
+        #endregion
+
+        #region Helper
 
         /// <summary>
         /// 验证参数
@@ -234,5 +244,10 @@ namespace Dynamics365WebApi.Auth
             };
             return list;
         }
+
+        #endregion
+
+
+
     }
 }
