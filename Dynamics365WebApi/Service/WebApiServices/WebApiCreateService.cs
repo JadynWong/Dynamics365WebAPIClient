@@ -8,6 +8,7 @@ using Dynamics365WebApi.WebApiQueryOption;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Dynamics365WebApi.Service
 {
     public partial class WebApiService
