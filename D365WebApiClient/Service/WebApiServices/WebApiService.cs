@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Dynamics365WebApi.Auth;
@@ -11,10 +9,11 @@ using Dynamics365WebApi.Cache;
 using Dynamics365WebApi.Common;
 using Dynamics365WebApi.Configs;
 using Dynamics365WebApi.Exceptions;
+using Dynamics365WebApi.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Dynamics365WebApi.Service
+namespace D365WebApiClient.Service.WebApiServices
 {
     /// <summary>
     /// Dynamics365 WebApi服务
@@ -302,6 +301,8 @@ namespace Dynamics365WebApi.Service
             int? maxPageSize = null,
             bool representation = false)
         {
+            Console.WriteLine(url);
+
             var req = new HttpRequestMessage(httpMethod, url);
             if (jObject != null)
                 req.Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json");

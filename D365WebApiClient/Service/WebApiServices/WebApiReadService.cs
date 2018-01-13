@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using D365WebApiClient.WebApiQueryOption;
+using D365WebApiClient.WebApiQueryOption.Options;
+using Dynamics365WebApi.Service;
 using Dynamics365WebApi.WebApiQueryOption;
 using Dynamics365WebApi.WebApiQueryOption.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 // ReSharper disable once CheckNamespace
-namespace Dynamics365WebApi.Service
+namespace D365WebApiClient.Service.WebApiServices
 {
     public partial class WebApiService
     {
@@ -259,64 +262,64 @@ namespace Dynamics365WebApi.Service
             return jObject;
         }
 
-        /// <summary>
-        /// 查询单个属性
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="attribute"></param>
-        /// <param name="enumAnnotations"></param>
-        /// <param name="maxPageSize"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, 
-            EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
-        {
-            return await ReadEntitySingleProp(entityName, attribute, string.Empty, enumAnnotations, maxPageSize);
-        }
+        ///// <summary>
+        ///// 查询单个属性
+        ///// </summary>
+        ///// <param name="entityName"></param>
+        ///// <param name="attribute"></param>
+        ///// <param name="enumAnnotations"></param>
+        ///// <param name="maxPageSize"></param>
+        ///// <returns></returns>
+        //public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, 
+        //    EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
+        //{
+        //    return await ReadEntitySingleProp(entityName, attribute, string.Empty, enumAnnotations, maxPageSize);
+        //}
 
-        /// <summary>
-        /// 查询单个属性
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="attribute"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="enumAnnotations"></param>
-        /// <param name="maxPageSize"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, QueryOptions queryOptions,
-            EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
-        {
-            if (maxPageSize.HasValue)
-            {
-                if (queryOptions.Any(x => x.GetType() == typeof(QueryCount)))
-                {
-                    throw new ArgumentException("您不应将 $top 与 $count 一起使用",nameof(maxPageSize));
-                }
-            }
-            return await ReadEntitySingleProp(entityName, attribute, queryOptions?.ToString(), enumAnnotations, maxPageSize);
-        }
+        ///// <summary>
+        ///// 查询单个属性
+        ///// </summary>
+        ///// <param name="entityName"></param>
+        ///// <param name="attribute"></param>
+        ///// <param name="queryOptions"></param>
+        ///// <param name="enumAnnotations"></param>
+        ///// <param name="maxPageSize"></param>
+        ///// <returns></returns>
+        //public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, QueryOptions queryOptions,
+        //    EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
+        //{
+        //    if (maxPageSize.HasValue)
+        //    {
+        //        if (queryOptions.Any(x => x.GetType() == typeof(QueryCount)))
+        //        {
+        //            throw new ArgumentException("您不应将 $top 与 $count 一起使用",nameof(maxPageSize));
+        //        }
+        //    }
+        //    return await ReadEntitySingleProp(entityName, attribute, queryOptions?.ToString(), enumAnnotations, maxPageSize);
+        //}
 
-        /// <summary>
-        /// 查询单个属性
-        /// </summary>
-        /// <param name="entityName"></param>
-        /// <param name="attribute"></param>
-        /// <param name="queryOptions"></param>
-        /// <param name="enumAnnotations"></param>
-        /// <param name="maxPageSize"></param>
-        /// <returns></returns>
-        public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, string queryOptions,
-            EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
-        {
-            //Now retrieve just the single property.
-            var url = BuildUrl(entityName, queryOptions, attribute);
+        ///// <summary>
+        ///// 查询单个属性
+        ///// </summary>
+        ///// <param name="entityName"></param>
+        ///// <param name="attribute"></param>
+        ///// <param name="queryOptions"></param>
+        ///// <param name="enumAnnotations"></param>
+        ///// <param name="maxPageSize"></param>
+        ///// <returns></returns>
+        //public async Task<JObject> ReadEntitySingleProp(string entityName, string attribute, string queryOptions,
+        //    EnumAnnotations enumAnnotations = EnumAnnotations.None, int? maxPageSize = null)
+        //{
+        //    //Now retrieve just the single property.
+        //    var url = BuildUrl(entityName, queryOptions, attribute);
 
 
-            var req = BuildGetRequest(url, enumAnnotations, maxPageSize);
+        //    var req = BuildGetRequest(url, enumAnnotations, maxPageSize);
 
-            var response = await this.SendAsync(req);
-            JObject prop = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync()); //200
-            return prop;
-        }
+        //    var response = await this.SendAsync(req);
+        //    JObject prop = JsonConvert.DeserializeObject<JObject>(await response.Content.ReadAsStringAsync()); //200
+        //    return prop;
+        //}
 
         /// <summary>
         /// 查询指定记录单个属性

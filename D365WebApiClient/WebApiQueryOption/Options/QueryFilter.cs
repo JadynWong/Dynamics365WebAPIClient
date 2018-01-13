@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dynamics365WebApi.WebApiQueryOption.Options.Filter;
 
-namespace Dynamics365WebApi.WebApiQueryOption.Options
+namespace D365WebApiClient.WebApiQueryOption.Options
 {
+    /// <inheritdoc />
     /// <summary>
     /// 筛选结果
     /// <para>https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#筛选结果</para>
@@ -15,9 +12,9 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
     {
         public QueryFilter()
         {
-            
+
         }
-        
+
         public QueryFilter(FilterExpression filterExpression)
         {
             if (filterExpression == null)
@@ -38,11 +35,6 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
                 throw new ArgumentNullException(nameof(FilterExpression));
             }
             return $"{OptionName}={FilterExpression}";
-        }
-
-        public override string ToString()
-        {
-            return Builder();
         }
 
     }

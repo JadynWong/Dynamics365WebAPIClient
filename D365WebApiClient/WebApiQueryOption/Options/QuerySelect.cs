@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
-namespace Dynamics365WebApi.WebApiQueryOption.Options
+namespace D365WebApiClient.WebApiQueryOption.Options
 {
+    /// <inheritdoc />
     /// <summary>
     /// 请求特定属性
     /// <para>https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#请求特定属性</para>
@@ -74,9 +74,5 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
             return $"{OptionName}={colums}";
         }
 
-        public override string ToString()
-        {
-            return Builder();
-        }
     }
 }

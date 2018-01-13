@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using D365WebApiClient.WebApiQueryOption.Options;
 
-namespace Dynamics365WebApi.WebApiQueryOption
+namespace D365WebApiClient.WebApiQueryOption
 {
+    /// <inheritdoc cref="List<QueryOption>" />
     /// <summary>
     /// 查询选项
     /// </summary>
@@ -41,7 +40,12 @@ namespace Dynamics365WebApi.WebApiQueryOption
                 {
                     throw new Exception($"参数'{queryOption.OptionName}'出现多次,参数仅能出现一次");
                 }
+
                 queryOptionNames.Add(queryOption.OptionName);
+                if (queryOptionNames.Contains(QueryCount.Name) && queryOptionNames.Contains(QueryTop.Name))
+                {
+                    throw new Exception($"您不应将 $top 与 $count 一起使用.https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#%E9%99%90%E5%88%B6%E7%BB%93%E6%9E%9C");
+                }
                 var queryOptionStr = queryOption.Builder();
                 if (string.IsNullOrWhiteSpace(queryOptionStr))
                     continue;

@@ -1,4 +1,4 @@
-# Dynamics365WebAPI
+# Dynamics365 WebAPI Client
 
 ## Support
 
@@ -7,7 +7,7 @@
 
 ## Demo Code
 ```         
- var queryOptions = new QueryOptions(
+ var queryOptions = new QueryOptions(){}
         new QuerySelect("fullname", "modifiedon", "createdon","versionnumber"),
         new QueryCount(true),
         new QueryFilter(new FilterExpression()
