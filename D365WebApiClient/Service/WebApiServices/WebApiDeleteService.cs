@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace Dynamics365WebApi.Service
+namespace D365WebApiClient.Service.WebApiServices
 {
     public partial class WebApiService
     {

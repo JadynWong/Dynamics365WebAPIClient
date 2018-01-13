@@ -1,19 +1,18 @@
-﻿using System;
-
-namespace Dynamics365WebApi.WebApiQueryOption.Options
+﻿namespace D365WebApiClient.WebApiQueryOption.Options
 {
+    /// <inheritdoc />
     /// <summary>
     /// 检索实体计数
     /// <para>您不应将 $top 与 $count 一起使用</para>
-    /// <see cref="https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#检索实体计数"/>
+    /// <see cref="!:https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#检索实体计数" />
     /// </summary>
     public class QueryCount : QueryOption
     {
         public QueryCount()
         {
-            
+
         }
-        
+
         /// <summary>
         /// 检索实体计数
         /// </summary>
@@ -23,7 +22,9 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
             Count = count;
         }
 
-        public override string OptionName => "$count";
+        public override string OptionName => Name;
+
+        public const string Name = "$count";
 
         /// <summary>
         /// 是否返回实体计数
@@ -34,11 +35,6 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         {
             var value = Count ? "true" : "false";
             return $"{OptionName}={value}";
-        }
-
-        public override string ToString()
-        {
-            return Builder();
         }
     }
 }

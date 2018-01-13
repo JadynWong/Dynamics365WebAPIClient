@@ -5,12 +5,14 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using D365WebApiClient.WebApiQueryOption;
+using Dynamics365WebApi.Service;
 using Dynamics365WebApi.WebApiQueryOption;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 // ReSharper disable once CheckNamespace
-namespace Dynamics365WebApi.Service
+namespace D365WebApiClient.Service.WebApiServices
 {
     public partial class WebApiService
     {

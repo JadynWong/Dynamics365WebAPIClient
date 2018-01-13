@@ -58,9 +58,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dynamics365WebApi\Dynamics365WebApi.csproj">
+    <ProjectReference Include="..\D365WebApiClient\D365WebApiClient.csproj">
       <Project>{73385872-d909-43a6-9003-c29bf7469e43}</Project>
-      <Name>Dynamics365WebApi</Name>
+      <Name>D365WebApiClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

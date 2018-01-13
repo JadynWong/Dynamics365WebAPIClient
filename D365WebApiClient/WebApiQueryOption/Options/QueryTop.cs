@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dynamics365WebApi.WebApiQueryOption.Options
+namespace D365WebApiClient.WebApiQueryOption.Options
 {
+    /// <inheritdoc />
     /// <summary>
     /// 限制结果
     /// <para>您不应将 $top 与 $count 一起使用</para>
-    /// <see cref="https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#限制结果"/>
+    /// <para>https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#限制结果</para>
     /// </summary>
     public class QueryTop : QueryOption
     {
@@ -18,19 +15,25 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// </summary>
         public QueryTop()
         {
-            
+
         }
-        
+
         /// <summary>
         /// 限制结果
         /// </summary>
         /// <param name="top">返回结果</param>
         public QueryTop(int top)
         {
+            if (top < 0)
+            {
+                throw new ArgumentException("不能小于0", nameof(top));
+            }
             this.Top = top;
         }
 
-        public override string OptionName => "$top";
+        public override string OptionName => Name;
+
+        public const string Name = "$top";
 
         /// <summary>
         /// 返回结果
@@ -42,9 +45,5 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
             return $"{OptionName}={Top}";
         }
 
-        public override string ToString()
-        {
-            return Builder();
-        }
     }
 }

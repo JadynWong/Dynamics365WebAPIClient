@@ -1,4 +1,4 @@
-﻿namespace Dynamics365WebApi.WebApiQueryOption
+﻿namespace D365WebApiClient.WebApiQueryOption
 {
     /// <summary>
     /// 查询选项
@@ -20,6 +20,9 @@
         /// 实现生成查询
         /// </summary>
         /// <returns></returns>
-        public abstract override string ToString();
+        public override string ToString()
+        {
+            return Builder();
+        }
     }
 }

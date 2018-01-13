@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dynamics365WebApi.WebApiQueryOption.Options
+namespace D365WebApiClient.WebApiQueryOption.Options
 {
+    /// <inheritdoc />
     /// <summary>
     /// 参数化查询
     /// <para>https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#将参数别名与系统查询选项一起使用。</para>
@@ -17,9 +14,9 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// </summary>
         public QueryParam()
         {
-            
+
         }
-        
+
         /// <summary>
         /// 参数化查询
         /// </summary>
@@ -50,12 +47,9 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
 
         public override string Builder()
         {
+            if (string.IsNullOrWhiteSpace(OptionName))
+                return string.Empty;
             return $"{OptionName}={ParamValue}";
-        }
-
-        public override string ToString()
-        {
-            return Builder();
         }
     }
 }

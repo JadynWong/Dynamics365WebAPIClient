@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Dynamics365WebApi.WebApiQueryOption.Options
+namespace D365WebApiClient.WebApiQueryOption.Options
 {
+    /// <inheritdoc />
     /// <summary>
     /// 排序结果
     /// <para>https://msdn.microsoft.com/zh-cn/library/gg334767.aspx#排序结果</para>
@@ -17,26 +14,34 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// </summary>
         public QueryOrderBy()
         {
-            
+
         }
 
         /// <summary>
         /// 排序结果 默认
         /// </summary>
-        /// <param name="orderBy"></param>
+        /// <param name="descend"></param>
         /// <param name="columns"></param>
-        public QueryOrderBy(bool orderBy,string[] columns)
+        public QueryOrderBy(bool descend, params string[] columns)
         {
-            OrderBy = orderBy;
+            Descend = descend;
+            if (columns == null)
+            {
+                throw new ArgumentNullException(nameof(columns));
+            }
             Columns = columns;
         }
-        
+
         /// <summary>
         /// 排序结果 默认
         /// </summary>
         /// <param name="columns"></param>
-        public QueryOrderBy(string[] columns)
+        public QueryOrderBy(params string[] columns)
         {
+            if (columns == null)
+            {
+                throw new ArgumentNullException(nameof(columns));
+            }
             Columns = columns;
         }
 
@@ -53,7 +58,7 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
         /// <para>False 正序 asc</para>
         /// <para>True 倒序 desc</para>
         /// </summary>
-        public bool? OrderBy { get; set; }
+        public bool? Descend { get; set; }
 
         public override string Builder()
         {
@@ -63,10 +68,10 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
             }
 
             var colums = string.Join(",", Columns);
-            var orderBy =  $"{OptionName}={colums}";
-            if (OrderBy.HasValue)
+            var orderBy = $"{OptionName}={colums}";
+            if (Descend.HasValue)
             {
-                if (OrderBy.Value)
+                if (Descend.Value)
                 {
                     orderBy += " desc";
                 }
@@ -77,11 +82,6 @@ namespace Dynamics365WebApi.WebApiQueryOption.Options
             }
 
             return orderBy;
-        }
-
-        public override string ToString()
-        {
-            throw new NotImplementedException();
         }
     }
 }
