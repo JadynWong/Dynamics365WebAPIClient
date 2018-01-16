@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using D365WebApiClient.Standard.Common;
 using D365WebApiClient.Standard.WebApiQueryOptions;
+using D365WebApiClient.Values;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -17,13 +18,13 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// 创建记录
         /// </summary>
         /// <param name="entityName"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public async Task<string> CreateAsync(string entityName, JObject jObject)
+        public async Task<string> CreateAsync(string entityName, Value value)
         {
             var url = BuildUrl(entityName);
 
-            var req = BuildRequest(HttpMethod.Post, url, jObject);
+            var req = BuildRequest(HttpMethod.Post, url, value);
 
             var response = await this.SendAsync(req); //204
             var createdguidUrl = response.Headers.GetValues("OData-EntityId").FirstOrDefault();
@@ -35,12 +36,12 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="entityName"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
-        public async Task<JObject> CreateAndReadAsync(string entityName, JObject jObject, QueryOptions queryOptions,
+        public async Task<Value> CreateAndReadAsync(string entityName, Value value, QueryOptions queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
-            return await CreateAndReadAsync(entityName, jObject, queryOptions?.ToString(), enumAnnotations);
+            return await CreateAndReadAsync(entityName, value, queryOptions?.ToString(), enumAnnotations);
         }
 
         /// <summary>
@@ -48,21 +49,20 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="entityName"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> CreateAndReadAsync(string entityName, JObject jObject, string queryOptions,
+        public async Task<Value> CreateAndReadAsync(string entityName, Value value, string queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
             var url = BuildUrl(entityName, queryOptions);
 
-            var req = BuildRequest(HttpMethod.Post, url, jObject, enumAnnotations, null, true);
+            var req = BuildRequest(HttpMethod.Post, url, value, enumAnnotations, null, true);
 
             var response = await this.SendAsync(req); //201
 
             //Body should contain the requested new-contact information.
-            JObject deserializeObject = JsonConvert.DeserializeObject<JObject>(
-                await response.Content.ReadAsStringAsync());
+            Value deserializeObject = Value.Read(await response.Content.ReadAsStringAsync());
             return deserializeObject;
         }
     }
