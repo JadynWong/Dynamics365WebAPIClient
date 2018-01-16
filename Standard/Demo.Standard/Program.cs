@@ -16,7 +16,6 @@ namespace Demo.Standard
             IServiceCollection services = new ServiceCollection();
 
             //注入
-            services.AddTransient<ILoggerFactory, LoggerFactory>();
             services.AddMemoryCache();
             services.AddDistributedMemoryCache();
             services.AddD365WebApiClientService(x =>

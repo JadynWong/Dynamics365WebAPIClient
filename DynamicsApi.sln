@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkDemo", "Framework\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.Standard", "Standard\Demo.Standard\Demo.Standard.csproj", "{CE476C7D-01C5-463D-BE4A-004974045B01}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "D365WebApiClient.Values", "Standard\D365WebApiClient.Value\D365WebApiClient.Values.csproj", "{9B369185-D5CA-4EE9-BC03-7A73D339BD94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{CE476C7D-01C5-463D-BE4A-004974045B01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE476C7D-01C5-463D-BE4A-004974045B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE476C7D-01C5-463D-BE4A-004974045B01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B369185-D5CA-4EE9-BC03-7A73D339BD94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B369185-D5CA-4EE9-BC03-7A73D339BD94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B369185-D5CA-4EE9-BC03-7A73D339BD94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B369185-D5CA-4EE9-BC03-7A73D339BD94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +65,7 @@ Global
 		{73385872-D909-43A6-9003-C29BF7469E43} = {8FD2FB1F-CA7A-4976-964C-DF960E311C09}
 		{E73EE7E8-A763-4D4C-ACFF-EFF5262BB593} = {8FD2FB1F-CA7A-4976-964C-DF960E311C09}
 		{CE476C7D-01C5-463D-BE4A-004974045B01} = {5791A047-4A13-407D-87E0-68378A14FFAA}
+		{9B369185-D5CA-4EE9-BC03-7A73D339BD94} = {5791A047-4A13-407D-87E0-68378A14FFAA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5FF7A40F-179C-4D92-9FE9-ECC6D128F989}

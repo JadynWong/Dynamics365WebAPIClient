@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using D365WebApiClient.Standard.Common;
 using D365WebApiClient.Standard.WebApiQueryOptions;
+using D365WebApiClient.Values;
 using Newtonsoft.Json.Linq;
 
 namespace D365WebApiClient.Standard.Services.WebApiServices
@@ -15,13 +16,13 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="entityName"></param>
         /// <param name="guid"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public async Task UpdateAsync(string entityName, Guid guid, JObject jObject)
+        public async Task UpdateAsync(string entityName, Guid guid, Value value)
         {
             var url = BuildGuidUrl(entityName, guid);
 
-            var req = BuildRequest(HttpMethod.Put, url, jObject);
+            var req = BuildRequest(HttpMethod.Put, url, value);
 
             var response = await this.SendAsync(req); //204
         }
@@ -32,12 +33,12 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="alternateKey"></param>
         /// <param name="alternateValue"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public async Task UpdateAsync(string entityName, string alternateKey, string alternateValue, JObject jObject)
+        public async Task UpdateAsync(string entityName, string alternateKey, string alternateValue, Value value)
         {
             await UpdateAsync(entityName, new[] { new KeyValuePair<string, string>(alternateKey, alternateValue), },
-                 jObject);
+                 value);
         }
 
         /// <summary>
@@ -45,13 +46,13 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="entityName"></param>
         /// <param name="alternateKeyValues"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public async Task UpdateAsync(string entityName, IEnumerable<KeyValuePair<string, string>> alternateKeyValues, JObject jObject)
+        public async Task UpdateAsync(string entityName, IEnumerable<KeyValuePair<string, string>> alternateKeyValues, Value value)
         {
             var url = BuildAlternateKeyUrl(entityName, alternateKeyValues);
 
-            var req = BuildRequest(HttpMethod.Put, url, jObject);
+            var req = BuildRequest(HttpMethod.Put, url, value);
 
             var response = await this.SendAsync(req); //204
         }
@@ -61,11 +62,11 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="guid"></param>
         /// <param name="entityName"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public async Task UpdatePatchAsync(string entityName, Guid guid, JObject jObject)
+        public async Task UpdatePatchAsync(string entityName, Guid guid, Value value)
         {
-            await UpsertAsync(entityName, guid, jObject, true);
+            await UpsertAsync(entityName, guid, value, true);
         }
 
         /// <summary>
@@ -74,12 +75,12 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="alternateKey"></param>
         /// <param name="alternateValue"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public async Task UpdatePatchAsync(string entityName, string alternateKey, string alternateValue,
-            JObject jObject)
+            Value value)
         {
-            await UpsertAsync(entityName, alternateKey, alternateValue, jObject, true);
+            await UpsertAsync(entityName, alternateKey, alternateValue, value, true);
         }
 
         /// <summary>
@@ -87,12 +88,12 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="entityName"></param>
         /// <param name="alternateKeyValues"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public async Task UpdatePatchAsync(string entityName, IEnumerable<KeyValuePair<string, string>> alternateKeyValues,
-            JObject jObject)
+            Value value)
         {
-            await UpsertAsync(entityName, alternateKeyValues, jObject, true);
+            await UpsertAsync(entityName, alternateKeyValues, value, true);
         }
 
         /// <summary>
@@ -101,13 +102,13 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="guid"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName, Guid guid, JObject jObject,
+        public async Task<Value> UpdateAndReadAsync(string entityName, Guid guid, Value value,
             QueryOptions queryOptions, EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
-            return await UpsertAndReadAsync(entityName, guid, jObject, queryOptions, true, false, enumAnnotations);
+            return await UpsertAndReadAsync(entityName, guid, value, queryOptions, true, false, enumAnnotations);
         }
 
         /// <summary>
@@ -116,13 +117,13 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="guid"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName, Guid guid, JObject jObject,
+        public async Task<Value> UpdateAndReadAsync(string entityName, Guid guid, Value value,
             string queryOptions, EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
-            return await UpsertAndReadAsync(entityName, guid, jObject, queryOptions, true, false, enumAnnotations);
+            return await UpsertAndReadAsync(entityName, guid, value, queryOptions, true, false, enumAnnotations);
         }
 
         /// <summary>
@@ -132,18 +133,18 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="alternateKey"></param>
         /// <param name="alternateValue"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName,
+        public async Task<Value> UpdateAndReadAsync(string entityName,
             string alternateKey, string alternateValue,
-            JObject jObject, QueryOptions queryOptions,
+            Value value, QueryOptions queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
             return await UpsertAndReadAsync(entityName,
                 alternateKey,
                 alternateValue,
-                jObject,
+                value,
                 queryOptions,
                 true,false,
                 enumAnnotations);
@@ -156,17 +157,17 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="alternateKey"></param>
         /// <param name="alternateValue"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName,
+        public async Task<Value> UpdateAndReadAsync(string entityName,
             string alternateKey, string alternateValue,
-             JObject jObject, string queryOptions,
+             Value value, string queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
             return await UpsertAndReadAsync(entityName,
                 new[] { new KeyValuePair<string, string>(alternateKey, alternateValue) },
-                jObject,
+                value,
                 queryOptions,
                 true,false,
                 enumAnnotations);
@@ -178,15 +179,15 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="alternateKeyValues"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName,
+        public async Task<Value> UpdateAndReadAsync(string entityName,
             IEnumerable<KeyValuePair<string, string>> alternateKeyValues,
-            JObject jObject, QueryOptions queryOptions,
+            Value value, QueryOptions queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
-            return await UpsertAndReadAsync(entityName, alternateKeyValues, jObject, queryOptions, true, false, enumAnnotations);
+            return await UpsertAndReadAsync(entityName, alternateKeyValues, value, queryOptions, true, false, enumAnnotations);
 
 
         }
@@ -197,15 +198,15 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="alternateKeyValues"></param>
         /// <param name="queryOptions"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <returns></returns>
-        public async Task<JObject> UpdateAndReadAsync(string entityName,
+        public async Task<Value> UpdateAndReadAsync(string entityName,
             IEnumerable<KeyValuePair<string, string>> alternateKeyValues,
-            JObject jObject, string queryOptions,
+            Value value, string queryOptions,
             EnumAnnotations enumAnnotations = EnumAnnotations.None)
         {
-            return await UpsertAndReadAsync(entityName, alternateKeyValues, jObject, queryOptions, true,
+            return await UpsertAndReadAsync(entityName, alternateKeyValues, value, queryOptions, true,
                 false, enumAnnotations);
         }
 
@@ -215,15 +216,15 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="guid"></param>
         /// <param name="attribute"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public async Task UpdateEntitySinglePropAsync(string entityName, Guid guid, string attribute, JObject jObject)
+        public async Task UpdateEntitySinglePropAsync(string entityName, Guid guid, string attribute, Value value)
         {
             //Create unique guidentifier by appending property name 
             var url = BuildGuidUrl(entityName, guid, null, attribute);
 
             //Now update just the single property.
-            var req = BuildRequest(HttpMethod.Put, url, jObject);
+            var req = BuildRequest(HttpMethod.Put, url, value);
             var responseMessage = await this.SendAsync(req); //204
         }
 
@@ -233,15 +234,15 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="alternateValue"></param>
         /// <param name="attribute"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="alternateKey"></param>
         /// <returns></returns>
         public async Task UpdateEntitySinglePropAsync(string entityName,
             string alternateKey, string alternateValue,
-            string attribute, JObject jObject)
+            string attribute, Value value)
         {
             await UpdateEntitySinglePropAsync(entityName,
-                new[] { new KeyValuePair<string, string>(alternateKey, alternateValue) }, attribute, jObject);
+                new[] { new KeyValuePair<string, string>(alternateKey, alternateValue) }, attribute, value);
         }
 
         /// <summary>
@@ -250,17 +251,17 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <param name="entityName"></param>
         /// <param name="alternateKeyValues"></param>
         /// <param name="attribute"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         public async Task UpdateEntitySinglePropAsync(string entityName,
             IEnumerable<KeyValuePair<string, string>> alternateKeyValues,
-            string attribute, JObject jObject)
+            string attribute, Value value)
         {
             //Create unique guidentifier by appending property name 
             var url = BuildAlternateKeyUrl(entityName, alternateKeyValues, attribute);
 
             //Now update just the single property.
-            var req = BuildRequest(HttpMethod.Put, url, jObject);
+            var req = BuildRequest(HttpMethod.Put, url, value);
             var responseMessage = await this.SendAsync(req); //204
         }
     }

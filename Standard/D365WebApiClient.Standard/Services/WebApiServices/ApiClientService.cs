@@ -8,6 +8,7 @@ using D365WebApiClient.Auth;
 using D365WebApiClient.Standard.Common;
 using D365WebApiClient.Standard.Configs;
 using D365WebApiClient.Standard.Exceptions;
+using D365WebApiClient.Values;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -266,19 +267,19 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// </summary>
         /// <param name="httpMethod"></param>
         /// <param name="url"></param>
-        /// <param name="jObject"></param>
+        /// <param name="value"></param>
         /// <param name="enumAnnotations"></param>
         /// <param name="maxPageSize"></param>
         /// <param name="representation"></param>
         /// <returns></returns>
-        private static HttpRequestMessage BuildRequest(HttpMethod httpMethod, string url, JObject jObject = null,
+        private static HttpRequestMessage BuildRequest(HttpMethod httpMethod, string url, Value value = null,
             EnumAnnotations? enumAnnotations = null,
             int? maxPageSize = null,
             bool representation = false)
         {
             var req = new HttpRequestMessage(httpMethod, url);
-            if (jObject != null)
-                req.Content = new StringContent(jObject.ToString(Formatting.None), Encoding.UTF8, "application/json");
+            if (value != null)
+                req.Content = new StringContent(value.ToString(Formatting.None), Encoding.UTF8, "application/json");
             var prefer = new List<string>();
             switch (enumAnnotations)
             {
