@@ -11,9 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\D365WebApiClient.DependencyInjection\D365WebApiClient.DependencyInjection.csproj" />
     <ProjectReference Include="..\D365WebApiClient.Standard\D365WebApiClient.Standard.csproj" />
-    <ProjectReference Include="..\D365WebApiClient.Value\D365WebApiClient.Values.csproj" />
   </ItemGroup>
 
 </Project>

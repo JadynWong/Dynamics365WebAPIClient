@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using D365WebApiClient.Standard.Configs;
 using D365WebApiClient.Standard.Services.WebApiServices;
 using D365WebApiClient.Standard.WebApiQueryOptions;
 using D365WebApiClient.Standard.WebApiQueryOptions.Options;
 using D365WebApiClient.Standard.WebApiQueryOptions.Options.Filter;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
 namespace Demo.Standard
 {
-
-
     public class Test
     {
         private readonly IApiClientService _crmApiService;
@@ -58,7 +51,6 @@ namespace Demo.Standard
                                     Guid.Parse("381512cc-f1cb-e611-80fb-00155d392b01"))
                             }
                         },
-
                     }
                 }),
 
@@ -102,7 +94,6 @@ namespace Demo.Standard
                                     Guid.Parse("381512cc-f1cb-e611-80fb-00155d392b01"))
                             }
                         },
-
                     }
                 }),
                 new QueryExpand()
@@ -140,8 +131,6 @@ namespace Demo.Standard
 
             var account3 = _crmApiService.ReadAsync("account", queryOptionsNew).Result;
             Console.WriteLine(account3);
-
-
 
             var e = _crmApiService.ReadAsync("account", "$select=name").Result;
             Console.WriteLine(e);
