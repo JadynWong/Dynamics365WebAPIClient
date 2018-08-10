@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Text;
 using D365WebApiClient.Standard.Common;
 using Newtonsoft.Json;
@@ -34,7 +31,7 @@ namespace D365WebApiClient.Auth
         /// </summary>
         public string refresh_token { get; set; }
 
-        #endregion
+        #endregion Filed
 
         #region Methods
 
@@ -58,7 +55,6 @@ namespace D365WebApiClient.Auth
             var tokenUrl = BuildTokenUrl(ADFS_Uri);
 
             var list = BuildCodeParams(userName, password);
-
 
             using (var handler = new HttpClientHandler() { AllowAutoRedirect = false })
             {
@@ -120,7 +116,7 @@ namespace D365WebApiClient.Auth
             }
         }
 
-        #endregion
+        #endregion Methods
 
         #region Helper
 
@@ -245,6 +241,6 @@ namespace D365WebApiClient.Auth
             return list;
         }
 
-        #endregion
+        #endregion Helper
     }
 }

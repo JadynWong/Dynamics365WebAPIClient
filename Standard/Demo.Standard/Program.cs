@@ -1,17 +1,11 @@
 ﻿using System;
-using D365WebApiClient.Standard.Services.WebApiServices;
 using Microsoft.Extensions.DependencyInjection;
-using D365WebApiClient.DependencyInjection;
-using D365WebApiClient.Standard.Configs;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
 namespace Demo.Standard
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             IServiceCollection services = new ServiceCollection();
 
@@ -36,7 +30,7 @@ namespace Demo.Standard
             IServiceProvider serviceProvider = services.BuildServiceProvider();
             //解析
             var test = serviceProvider.GetService<Test>();
-            
+
             test.TestService();
         }
     }
