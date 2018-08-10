@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using Microsoft.Extensions.Options;
 
 namespace D365WebApiClient.Standard.Configs
 {
@@ -60,7 +58,6 @@ namespace D365WebApiClient.Standard.Configs
 
         public Dynamics365Options()
         {
-
         }
 
         /// <summary>

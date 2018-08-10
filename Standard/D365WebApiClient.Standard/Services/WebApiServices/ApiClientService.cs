@@ -5,26 +5,24 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using D365WebApiClient.Auth;
+using D365WebApiClient.Cache;
 using D365WebApiClient.Standard.Common;
 using D365WebApiClient.Standard.Configs;
 using D365WebApiClient.Standard.Exceptions;
 using D365WebApiClient.Values;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
+
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace D365WebApiClient.Standard.Services.WebApiServices
 {
     /// <summary>
     /// Dynamics365 WebApi服务
-    /// <para>单例使用</para>
     /// </summary>
     public partial class ApiClientService : IApiClientService
     {
         private readonly HttpClient _restClient;
 
-        private readonly Dynamics365Options _dynamics365Options;
+        private Dynamics365Options _dynamics365Options { get; }
 
         /// <summary>
         /// Dynamics365配置
@@ -34,12 +32,20 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <summary>
         /// 构造Dynamics365 WebAPI服务
         /// </summary>
-        public ApiClientService(IOptions<Dynamics365Options> options, IDistributedCache distributedCache)
+        /// <param name="dynamics365Config">Dynamics365配置</param>
+        /// <param name="cacheManager">缓存管理(on-premise时无须提供)</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public ApiClientService(Dynamics365Options dynamics365Options, ICacheManager cacheManager)
         {
-            _dynamics365Options = options.Value;
+            if (dynamics365Options == null)
+                throw new ArgumentNullException(nameof(dynamics365Options));
+
+            _dynamics365Options = dynamics365Options;
             if (_dynamics365Options.IsIfd)
             {
-                _restClient = BuildOnIfd(distributedCache);
+                if (cacheManager == null)
+                    throw new ArgumentNullException(nameof(cacheManager));
+                _restClient = BuildOnIfd(cacheManager);
             }
             else
             {
@@ -50,20 +56,20 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
         /// <summary>
         /// 构造IFD HTTP客户端
         /// </summary>
-        /// <param name="distributedCache"></param>
+        /// <param name="cacheManager"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private HttpClient BuildOnIfd(IDistributedCache distributedCache)
+        private HttpClient BuildOnIfd(ICacheManager cacheManager)
         {
-            if (distributedCache == null)
-                throw new ArgumentNullException(nameof(distributedCache));
+            if (cacheManager == null)
+                throw new ArgumentNullException(nameof(cacheManager));
             var httpMessageHandler = new OAuthMessageHandler(_dynamics365Options.ADFS_URI,
                 _dynamics365Options.Resource,
                 _dynamics365Options.ClientId,
                 _dynamics365Options.RedirectUri,
                 $"{_dynamics365Options.DomainName}\\{_dynamics365Options.UserName}",
                 _dynamics365Options.Password,
-                distributedCache,
+                cacheManager,
                 new HttpClientHandler());
             ;
             return GetNewHttpClient(httpMessageHandler, _dynamics365Options.WebApiAddress);
@@ -285,27 +291,34 @@ namespace D365WebApiClient.Standard.Services.WebApiServices
             {
                 case EnumAnnotations.None:
                     break;
+
                 case EnumAnnotations.FormattedValue:
                     prefer.Add(
                         "odata.include-annotations=\"OData.Community.Display.V1.FormattedValue\"");
                     break;
+
                 case EnumAnnotations.Associatednavigationproperty:
                     prefer.Add(
                         "odata.include-annotations=\"Microsoft.Dynamics.CRM.associatednavigationproperty\"");
                     break;
+
                 case EnumAnnotations.Lookuplogicalname:
                     prefer.Add(
                         "odata.include-annotations=\"Microsoft.Dynamics.CRM.lookuplogicalname\"");
                     break;
+
                 case EnumAnnotations.MicrosoftDynamicsCrmAll:
                     prefer.Add(
                         "odata.include-annotations=\"Microsoft.Dynamics.CRM.*\"");
                     break;
+
                 case EnumAnnotations.All:
                     prefer.Add("odata.include-annotations=\"*\"");
                     break;
+
                 case null:
                     break;
+
                 default:
                     break;
             }

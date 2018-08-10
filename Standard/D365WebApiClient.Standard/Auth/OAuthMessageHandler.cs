@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Distributed;
+using D365WebApiClient.Cache;
 
 namespace D365WebApiClient.Auth
 {
@@ -20,7 +20,8 @@ namespace D365WebApiClient.Auth
         private readonly string _redirectUri;
         private readonly string _userName;
         private readonly string _password;
-        private readonly IDistributedCache _distributedCache;
+
+        private readonly ICacheManager _cacheManager;
 
         /// <summary>
         /// 构造
@@ -39,7 +40,7 @@ namespace D365WebApiClient.Auth
             string redirectUri,
             string userName,
             string password,
-            IDistributedCache distributedCache,
+            ICacheManager cacheManager,
             HttpMessageHandler innerHandler) : base(innerHandler)
         {
             this._adfsUri = ADFS_Uri;
@@ -48,7 +49,7 @@ namespace D365WebApiClient.Auth
             this._redirectUri = redirectUri;
             this._userName = userName;
             this._password = password;
-            _distributedCache = distributedCache;
+            this._cacheManager = cacheManager;
         }
 
         /// <summary>
@@ -76,28 +77,22 @@ namespace D365WebApiClient.Auth
         {
             string accessToken;
             var tokenKey = string.Format(TokenKey, this._resource, this._clientId, this._userName);
-            var bytes = _distributedCache.Get(tokenKey);
-            if (bytes != null)
+            if (_cacheManager.IsSet(tokenKey))
             {
-                accessToken = Encoding.UTF8.GetString(bytes);
-
+                accessToken = _cacheManager.Get<string>(tokenKey);
                 if (!string.IsNullOrWhiteSpace(accessToken))
                 {
                     return accessToken;
                 }
             }
 
-
-
             // 保证缓存Token不会过期
             var now = DateTimeOffset.Now;
             lock (LockObj)
             {
-                bytes = _distributedCache.Get(tokenKey);
-                if (bytes != null)
+                if (_cacheManager.IsSet(tokenKey))
                 {
-                    accessToken = Encoding.UTF8.GetString(bytes);
-
+                    accessToken = _cacheManager.Get<string>(tokenKey);
                     if (!string.IsNullOrWhiteSpace(accessToken))
                     {
                         return accessToken;
@@ -118,11 +113,9 @@ namespace D365WebApiClient.Auth
                     throw new Exception("Token get failed");
                 }
 
+                var cacheTime = now + TimeSpan.FromSeconds(expiresIn);
 
-                _distributedCache.Set(tokenKey, Encoding.UTF8.GetBytes(accessToken), options: new DistributedCacheEntryOptions()
-                {
-                    AbsoluteExpiration = now + TimeSpan.FromSeconds(expiresIn)
-                });
+                _cacheManager.Set<string>(tokenKey, cacheTime, accessToken);
                 return accessToken;
             }
         }
