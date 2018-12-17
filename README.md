@@ -2,7 +2,7 @@
 
 ## Support
 
-* IFD - ADFS
+* IFD - ADFS3.0
 * On-Premise
 
 ## Demo Code
