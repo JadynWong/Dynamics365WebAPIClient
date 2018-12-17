@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/JadynWong/Dynamics365WebAPIClient/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/JadynWong/Dynamics365WebAPIClient</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JadynWong/Dynamics365WebAPIClient</RepositoryUrl>
+    <Authors>JadynWong</Authors>
+    <Company>JadynWong</Company>
+    <Product>Dynamics365WebAPIClient</Product>
+    <RootNamespace>D365WebApiClient</RootNamespace>
+    <Version>1.1.0</Version>
+    <Copyright>copyright © JadynWong</Copyright>
+    <PackageId>D365WebApiClient</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <DefineConstants>TRACE;NET45;NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Runtime.Caching" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.1.0" />
+   
+  </ItemGroup>
+
+</Project>

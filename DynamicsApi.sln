@@ -9,11 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{1488F795-992
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "D365WebApiClient.Standard", "Standard\D365WebApiClient.Standard\D365WebApiClient.Standard.csproj", "{76726354-CB8E-4C98-A358-7D477426758A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "D365WebApiClient", "src\D365WebApiClient\D365WebApiClient.csproj", "{76726354-CB8E-4C98-A358-7D477426758A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Standard", "Standard", "{5791A047-4A13-407D-87E0-68378A14FFAA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5791A047-4A13-407D-87E0-68378A14FFAA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Standard\Demo.Standard\Demo.csproj", "{CE476C7D-01C5-463D-BE4A-004974045B01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "demo", "demo\Demo.csproj", "{CE476C7D-01C5-463D-BE4A-004974045B01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
