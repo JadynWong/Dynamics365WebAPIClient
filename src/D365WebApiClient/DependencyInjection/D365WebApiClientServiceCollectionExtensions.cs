@@ -89,6 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 });
             }
             services.TryAddScoped(typeof(ICacheManager), typeof(TCacheManager));
+            services.TryAddScoped<IAsyncLocker, AsyncLocker>();
             services.TryAddScoped<IApiClientService, ApiClientService>();
             return services;
         }
