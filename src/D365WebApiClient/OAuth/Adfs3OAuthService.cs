@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace D365WebApiClient.OAuth
 {
-    public class OAuthService
+    public class Adfs3OAuthService : IOAuthService
     {
         private readonly HttpClient _httpClient;
         private readonly Dynamics365Option _dynamics365Option;
 
-        public OAuthService(HttpClient httpClient, Dynamics365Option dynamics365Option)
+        public Adfs3OAuthService(HttpClient httpClient, Dynamics365Option dynamics365Option)
         {
             _httpClient = httpClient;
             _dynamics365Option = dynamics365Option;
@@ -29,11 +29,11 @@ namespace D365WebApiClient.OAuth
         public virtual async Task<OAuthResult> AcquireTokenAsync()
         {
             var userName = $"{_dynamics365Option.DomainName}\\{_dynamics365Option.UserName}";
-            VerifyParams(_dynamics365Option.ADFS_URI, _dynamics365Option.Resource, _dynamics365Option.ClientId, _dynamics365Option.RedirectUri, userName, _dynamics365Option.Password);
+            VerifyParams(_dynamics365Option.ADFSUri, _dynamics365Option.Resource, _dynamics365Option.ClientId, _dynamics365Option.RedirectUri, userName, _dynamics365Option.Password);
 
-            var url = BuildCodeUrl(_dynamics365Option.ADFS_URI, _dynamics365Option.Resource, _dynamics365Option.ClientId, _dynamics365Option.RedirectUri);
+            var url = BuildCodeUrl(_dynamics365Option.ADFSUri, _dynamics365Option.Resource, _dynamics365Option.ClientId, _dynamics365Option.RedirectUri);
 
-            var tokenUrl = BuildTokenUrl(_dynamics365Option.ADFS_URI);
+            var tokenUrl = BuildTokenUrl(_dynamics365Option.ADFSUri);
 
             var list = BuildCodeParams(userName, _dynamics365Option.Password);
 
@@ -79,7 +79,7 @@ namespace D365WebApiClient.OAuth
         /// <returns></returns>
         public virtual async Task<OAuthResult> CrmRefreshTokenAsync(string refresh_token)
         {
-            var tokenUrl = BuildTokenUrl(_dynamics365Option.ADFS_URI);
+            var tokenUrl = BuildTokenUrl(_dynamics365Option.ADFSUri);
             // 第3次请求 请求Token
             var tokenParams = BuildRefreshTokenParams(refresh_token);
             using (var response3 = await _httpClient.PostAsync(tokenUrl, new FormUrlEncodedContent(tokenParams)))

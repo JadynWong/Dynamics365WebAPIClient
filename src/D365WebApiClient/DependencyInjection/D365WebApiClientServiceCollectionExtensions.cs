@@ -64,29 +64,58 @@ namespace Microsoft.Extensions.DependencyInjection
                     UseDefaultCredentials = true
                 };
                 var dynamic365Option = serviceProvider.GetRequiredService<Dynamics365Option>();
-                if (!dynamic365Option.IsIfd)
+                if ((dynamic365Option.Dynamics365Type == Dynamics365Type.OnPremises))
                 {
                     httpClientHandler.Credentials = new NetworkCredential(dynamic365Option.UserName, dynamic365Option.Password, dynamic365Option.DomainName);
                 }
                 return httpClientHandler;
 
             }).AddHttpMessageHandler<OAuthMessageHandler>();
-            if (options.IsIfd)
+            switch (options.Dynamics365Type)
             {
-                services.AddHttpClient<OAuthService>(httpClient =>
-                {
-                    httpClient.BaseAddress = new Uri(options.ADFS_URI);
-                    httpClient.Timeout = new TimeSpan(0, 2, 0);
-                }).ConfigurePrimaryHttpMessageHandler((serviceProvider) =>
-                {
-                    var httpClientHandler = new HttpClientHandler()
+                case Dynamics365Type.IFD_ADFS_V3:
+                    services.AddHttpClient<Adfs3OAuthService>(httpClient =>
                     {
-                        AllowAutoRedirect = false,
-                        UseDefaultCredentials = true
-                    };
-                    return httpClientHandler;
-
-                });
+                        httpClient.BaseAddress = new Uri(options.ADFSUri);
+                        httpClient.Timeout = new TimeSpan(0, 2, 0);
+                    }).ConfigurePrimaryHttpMessageHandler((serviceProvider) =>
+                    {
+                        var httpClientHandler = new HttpClientHandler()
+                        {
+                            AllowAutoRedirect = false,
+                            UseDefaultCredentials = true
+                        };
+                        httpClientHandler.ServerCertificateCustomValidationCallback +=
+                            (message, certificate2, arg3, arg4) => true;
+                        return httpClientHandler;
+                    });
+                    services.TryAddTransient<IOAuthService>(serviceProvider => serviceProvider.GetRequiredService<Adfs3OAuthService>());
+                    break;
+                case Dynamics365Type.Online:
+                    //todo online resource
+                    throw new ArgumentOutOfRangeException();
+                case Dynamics365Type.IFD_ADFS_V4:
+                    services.AddHttpClient<Adfs4OAuthService>(httpClient =>
+                    {
+                        httpClient.BaseAddress = new Uri(options.ADFSUri);
+                        httpClient.Timeout = new TimeSpan(0, 2, 0);
+                    }).ConfigurePrimaryHttpMessageHandler((serviceProvider) =>
+                    {
+                        var httpClientHandler = new HttpClientHandler()
+                        {
+                            AllowAutoRedirect = false,
+                            UseDefaultCredentials = true
+                        };
+                        httpClientHandler.ServerCertificateCustomValidationCallback +=
+                            (message, certificate2, arg3, arg4) => true;
+                        return httpClientHandler;
+                    });
+                    services.TryAddTransient<IOAuthService>(serviceProvider => serviceProvider.GetRequiredService<Adfs4OAuthService>());
+                    break;
+                case Dynamics365Type.OnPremises:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             services.TryAddScoped(typeof(ICacheManager), typeof(TCacheManager));
             services.TryAddScoped<IAsyncLocker, AsyncLocker>();

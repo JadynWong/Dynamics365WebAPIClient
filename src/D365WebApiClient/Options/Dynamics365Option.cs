@@ -1,4 +1,6 @@
 ﻿using System;
+// ReSharper disable CommentTypo
+// ReSharper disable InconsistentNaming
 
 namespace D365WebApiClient.Options
 {
@@ -7,7 +9,7 @@ namespace D365WebApiClient.Options
         /// <summary>
         /// ADFS地址
         /// </summary>
-        public string ADFS_URI { get; set; }
+        public string ADFSUri { get; set; }
 
         /// <summary>
         /// CRM
@@ -15,17 +17,22 @@ namespace D365WebApiClient.Options
         public string Resource { get; set; }
 
         /// <summary>
-        /// 组织
+        /// Organization
         /// </summary>
         public string Organization { get; set; }
 
         /// <summary>
-        /// Clientguid
+        /// ClientId
         /// </summary>
         public string ClientId { get; set; }
 
         /// <summary>
-        /// RedirectUri
+        /// ClientSecret Dynamics365Type = IfdV4 | Online
+        /// </summary>
+        public string ClientSecret { get; set; }
+
+        /// <summary>
+        /// RedirectUri ClientSecret Dynamics365Type = IfdV3
         /// </summary>
         public string RedirectUri { get; set; }
 
@@ -45,9 +52,9 @@ namespace D365WebApiClient.Options
         public string Password { get; set; }
 
         /// <summary>
-        /// IsIfd
+        /// Dynamics365Type
         /// </summary>
-        public bool IsIfd { get; set; }
+        public Dynamics365Type Dynamics365Type { get; set; }
 
         /// <summary>
         /// API版本
@@ -72,11 +79,11 @@ namespace D365WebApiClient.Options
         /// <param name="redirectUri"></param>
         /// <param name="organization"></param>
         /// <param name="version"></param>
-        /// <param name="isIfd"></param>
+        /// <param name="dynamics365Type"></param>
         public Dynamics365Option(string adfsUri, string resource, string domainName, string userName, string password,
-            string clientId, string redirectUri, string organization, string version, bool isIfd)
+            string clientId, string redirectUri, string organization, string version, Dynamics365Type dynamics365Type)
         {
-            ADFS_URI = adfsUri;
+            ADFSUri = adfsUri;
             Resource = resource;
             DomainName = domainName;
             UserName = userName;
@@ -84,7 +91,7 @@ namespace D365WebApiClient.Options
             ClientId = clientId;
             RedirectUri = redirectUri;
             Organization = organization;
-            IsIfd = isIfd;
+            Dynamics365Type = dynamics365Type;
             Version = new Version(version);
         }
 
@@ -92,28 +99,55 @@ namespace D365WebApiClient.Options
         {
             get
             {
-                if (Resource == null || ApiPath == null || Version == null)
+                if (string.IsNullOrWhiteSpace(this.Resource) || Version == null)
                 {
                     throw new Exception("Dynamics365Options must be configuare");
                 }
 
-                if (!Resource.EndsWith("/"))
+                switch (Dynamics365Type)
                 {
-                    this.Resource += "/";
-                }
-                if (IsIfd)
-                {
-                    return $"{Resource}{ApiPath}v{Version}/";
-                }
-                else
-                {
-                    if (Organization == null)
-                    {
-                        throw new Exception("Dynamics365Options onPromise Organization must be configuare");
-                    }
-                    return $"{Resource}{Organization}{ApiPath}v{Version}/";
+                    case Dynamics365Type.IFD_ADFS_V4:
+                        if (!this.Resource.EndsWith("/"))
+                        {
+                            return this.Resource + "/";
+                        }
+                        return this.Resource;
+                    case Dynamics365Type.Online:
+                        //todo online resource
+                        throw new ArgumentOutOfRangeException();
+                    case Dynamics365Type.IFD_ADFS_V3:
+                        if (Organization == null)
+                        {
+                            throw new Exception("Dynamics365Options OnPromise Organization must be configuare");
+                        }
+                        return $"{Resource}{Organization}{ApiPath}v{Version}/";
+
+                    case Dynamics365Type.OnPremises:
+                        return $"{Resource}{ApiPath}v{Version}/";
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }
+    }
+
+    public enum Dynamics365Type
+    {
+        /// <summary>
+        /// Online
+        /// </summary>
+        Online,
+        /// <summary>
+        /// IFD_ADFS_V3 (Must set RedirectUri)
+        /// </summary>
+        IFD_ADFS_V3,
+        /// <summary>
+        /// ADFS4.0 (Must set ClientSecret)
+        /// </summary>
+        IFD_ADFS_V4,
+        /// <summary>
+        /// On-Promise
+        /// </summary>
+        OnPremises
     }
 }

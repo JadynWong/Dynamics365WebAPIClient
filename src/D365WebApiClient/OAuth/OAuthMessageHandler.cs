@@ -16,7 +16,7 @@ namespace D365WebApiClient.OAuth
 
         private readonly Dynamics365Option _dynamics365Options;
         private readonly ICacheManager _cacheManager;
-        private readonly OAuthService _oAuthService;
+        private readonly IOAuthService _oAuthService;
         private readonly IAsyncLocker _asyncLocker;
 
         /// <inheritdoc />
@@ -24,15 +24,14 @@ namespace D365WebApiClient.OAuth
         /// 构造
         /// </summary>
         /// <param name="cacheManager"></param>
-        /// <param name="innerHandler">innerHandler</param>
         /// <param name="dynamics365Options"></param>
         /// <param name="oAuthService"></param>
+        /// <param name="asyncLocker"></param>
         public OAuthMessageHandler(
             Dynamics365Option dynamics365Options,
             ICacheManager cacheManager,
-            HttpMessageHandler innerHandler,
-            OAuthService oAuthService,
-            IAsyncLocker asyncLocker) : base(innerHandler)
+            IOAuthService oAuthService,
+            IAsyncLocker asyncLocker)
         {
             _dynamics365Options = dynamics365Options;
             _cacheManager = cacheManager;
@@ -50,15 +49,14 @@ namespace D365WebApiClient.OAuth
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (_dynamics365Options.IsIfd)
+
+            if (!request.Headers.Contains("Authentication"))
             {
-                if (!request.Headers.Contains("Authentication"))
-                {
-                    var accessToken = await GetTokenAsync();
-                    _authHeader = new AuthenticationHeaderValue("Bearer", accessToken);
-                    request.Headers.Authorization = _authHeader;
-                }
+                var accessToken = await GetTokenAsync();
+                _authHeader = new AuthenticationHeaderValue("Bearer", accessToken);
+                request.Headers.Authorization = _authHeader;
             }
+
 
 
             var httpResponseMessage = await base.SendAsync(request, cancellationToken);
